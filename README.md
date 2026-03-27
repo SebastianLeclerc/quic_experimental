@@ -2,10 +2,6 @@
 Source for modified EMQX, NanoSDK IoT MQTT over QUIC project
 
 
-cloud@cloud:~/NanoSDK/demo/quic_mqtt $ ./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0
-
-edge@edge:~/NanoSDK/demo/quic_mqtt $ sudo taskset -c 3 chrt -f 80 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/1 10 10 1 1 & sudo taskset -c 2 chrt -f 78 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/2 10 10 1 1
-
 # Hardware
 Sensor: RPi 4 Model B (4GB)
 
@@ -63,7 +59,7 @@ Compile demo script with correct links and test it:
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
-./quic_client conn 'mqtt-quic://IP_ADDRESS:14567' #Default QUIC port, simple connection test.
+./quic_client conn 'mqtt-quic://192.168.0.29:14567' #Default QUIC port, simple connection test.
 ```
 Verify connection:
 ```
@@ -71,6 +67,13 @@ sudo docker exec -it CONTAINERNAME sh #Go into the container
 emqx ctl clients list #Should show the client IP
 ```
 Copy pub.c, compile it, and test it out!
+```
+#For example:
+#Pin in core 3, FIFO, PRI 80, Publish MQTT topic sensor/1 with QoS 0, 10 B, 10 msgs, 1 s duration, silent-mode.
+#And
+#Pin in core 2, FIFO, PRI 78, Publish MQTT topic sensor/2 with QoS 0, 10 B, 10 msgs, 1 s duration, silent-mode.
+sudo taskset -c 3 chrt -f 80 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/1 10 10 1 1 & sudo taskset -c 2 chrt -f 78 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/2 10 10 1 1
+```
 
 # Edge
 Install EMQX broker via Docker https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html
@@ -81,3 +84,15 @@ Pin container to core 1: sudo docker update --cpuset-cpus="1" CONTAINERNAME & su
 
 # Cloud
 Installed NanoSDK client github.com/emqx/NanoSDK
+
+See steps above in # Sensor
+
+Copy sub.c, compile it, and test it out!
+```
+#For example:
+cd ~/NanoSDK/demo/quic_mqtt
+#Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
+./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0
+CTRL+C #Interrupt and save statistics after sensors finished sending.
+cat messages.log #Contains: recv_timestamp,topic,seq,send_timestamp,random_data
+```
