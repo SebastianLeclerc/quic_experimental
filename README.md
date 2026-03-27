@@ -139,28 +139,18 @@ sudo systemctl disable --now ModemManager.service
 # sudo cset shield --exec ./my_program
 # Removes "all"´processes from core3 and shields
 ##############
-
-# For SCHED_DEADLINE support, run as root and use sched_setattr in your code.
-
-# Set in code to eliminate page faults
-# mlockall(MCL_CURRENT | MCL_FUTURE);
-
-# Keep priority High, e.g., 30-60, higher than all kernel non-RT tasks, not starving network
-# Network IRQ
-
-# Run another program in same core with low priority (avoid deep sleep)
-
-#sudo taskset -c [0-4] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg
-
 ```
 
-Run program in core 1-3, using schedule, and priority: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
+Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
+
+Keep priority High, e.g. probably, 30-60, higher than all kernel non-RT tasks, not starving network
 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 ```
 Todo:
 Add memory lock in program (.c code):  mlockall(MCL_CURRENT | MCL_FUTURE);
-Add timestamp in begining/end. 
+Add timestamp in begining/end.
+Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
 ```
 # Sensor
 Installed NanoSDK client github.com/emqx/NanoSDK
