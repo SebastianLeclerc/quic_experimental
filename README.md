@@ -138,7 +138,7 @@ sudo systemctl disable --now ModemManager.service
 # sudo cset shield -c 3 -k on
 # sudo cset shield --exec ./my_program
 # Removes "all"´processes from core3 and shields
-##############
+############################################
 ```
 
 Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
