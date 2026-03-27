@@ -57,12 +57,18 @@ cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
 ninja
 sudo ninja install; sudo ldconfig
 ```
-Compile demo script with correct links:
+Compile demo script with correct links and test it:
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
+./quic_client conn 'mqtt-quic://IP_ADDRESS:14567'
 ```
 
+Verify connection:
+```
+sudo docker exec -it CONTAINERNAME sh #Go into the container
+emqx ctl clients list #Should show the client IP
+```
 # Edge
 Install EMQX broker via Docker https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html
 
