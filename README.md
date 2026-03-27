@@ -21,14 +21,17 @@ Isolated the cores at boot by adding to config "/boot/firmware/cmdline.txt" the 
 Disable CPU frequency scaling (lost after rebooting):
 ```echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor```
 
-Pin interrupts away from RT cores:
+Pin (all possible) interrupts away from RT cores. Some are not possible, but its OK.:
 ```
-for i in /proc/irq/*/smp_affinity; do
-    echo 1 > $i
-done
-#OR this
-for pid in $(ps -e -o pid=); do
-    taskset -pc 0 $pid 2>/dev/null
+sudu su #Must be root
+# Migrate irqs to CPU 0 (exclude CPU 1-3)
+for I in $(ls /proc/irq)
+do
+    if [[ -d "/proc/irq/$I" ]]
+    then
+        echo "Affining vector $I to CPUs 0"
+        echo 0 > /proc/irq/$I/smp_affinity_list
+    fi
 done
 ```
 
