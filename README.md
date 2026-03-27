@@ -14,14 +14,12 @@ After installing OS, followed instructions at to build new kernel (with PREEMPT_
 
 Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```).
 
-After complete and rebooted, verified that PREEMPT_RT is enabled (uname -a #Shows this).
+After complete and rebooted, verified that PREEMPT_RT is enabled (```uname -a #Shows this```).
 
-Isolated the cores at boot by adding to config "/boot/firmware/cmdline.txt" the following:
-isolcpus=1,2,3 nohz_full=1,2,3 rcu_nocbs=1,2,3
-Requires reboot
+Isolated the cores at boot by adding to config "/boot/firmware/cmdline.txt" the following ```isolcpus=1,2,3 nohz_full=1,2,3 rcu_nocbs=1,2,3```, requires reboot.
 
 Disable CPU frequency scaling (lost after rebooting):
-echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+```echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor```
 
 Pin interrupts away from RT cores:
 ```
