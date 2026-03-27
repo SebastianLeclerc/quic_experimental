@@ -73,7 +73,7 @@ fi
 # Check global memory lock limit
 if grep -q "^#DefaultLimitMEMLOCK=8M" /etc/systemd/system.conf; then
     echo "Fixing global memory lock :("
-    sudo sed -i 's/^#DefaultLimitMEMLOCK=8M/#DefaultLimitMEMLOCK=infinity/' /etc/systemd/system.conf
+    sudo sed -i 's/^#DefaultLimitMEMLOCK=8M/DefaultLimitMEMLOCK=infinity/' /etc/systemd/system.conf
     sudo systemctl daemon-reexec
     error=1
 else
@@ -82,16 +82,22 @@ fi
 
 # Check user memory access limit
 if grep -q "^$u hard memlock unlimited" /etc/security/limits.conf; then
+    echo "User memory already configured, nice!"
+else
     echo "Fixing user memory lock :("
-    echo "$u hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
-    echo "$u soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
-    echo "root hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
-    echo "root soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
+    {
+        echo ""
+        echo "# Added by setup script"
+        echo "$u hard memlock unlimited"
+        echo "$u soft memlock unlimited"
+        echo "root hard memlock unlimited"
+        echo "root soft memlock unlimited"
+    } | sudo tee -a /etc/security/limits.conf > /dev/null
+
     sudo systemctl daemon-reexec
     error=1
-else
-    echo "User memory already configured, nice!"
 fi
+
 
 # Reboot if needed
 if [ "$error" -eq 1 ]; then
