@@ -85,8 +85,8 @@ if grep -q "^$u hard memlock unlimited" /etc/security/limits.conf; then
     echo "Fixing user memory lock :("
     echo "$u hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
     echo "$u soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
-    echo "$u hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
-    echo "$u soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
+    echo "root hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
+    echo "root soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
     sudo systemctl daemon-reexec
     error=1
 else
