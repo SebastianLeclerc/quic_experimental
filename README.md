@@ -12,7 +12,7 @@ Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, au
 
 After installing OS, followed instructions at to build new kernel (with PREEMPT_RT): https://www.raspberrypi.com/documentation/computers/linux_kernel.html
 
-Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (sudo apt install libncurses-dev -y && make menuconfig).
+Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```).
 
 After complete and rebooted, verified that PREEMPT_RT is enabled (uname -a #Shows this).
 
