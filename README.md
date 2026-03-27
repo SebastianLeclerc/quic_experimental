@@ -63,7 +63,7 @@ Compile demo script with correct links and test it:
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
-./quic_client conn 'mqtt-quic://IP_ADDRESS:14567'
+./quic_client conn 'mqtt-quic://IP_ADDRESS:14567' #Default QUIC port, simple connection test.
 ```
 Verify connection:
 ```
