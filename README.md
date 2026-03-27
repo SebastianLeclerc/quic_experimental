@@ -41,7 +41,26 @@ mlockall(MCL_CURRENT | MCL_FUTURE);
 Run program in core, using schedule, and priority: sudo taskset -c [0-4] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg
 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
+```
+Todo:
+deep sleep state
+run another program in same core with lower priority so it the CPU does not sleep
 
+do step 1, 2, 3, 5
+keep priority near to 99
+Can probably skip cset / cpushield
+
+hyperthreading disabled (lscpu)
+
+real-time throttling: 
+cat /proc/sys/kernel/sched_rt_runtime_us
+cat /proc/sys/kernel/sched_rt_period_us
+
+change it to:
+echo -1 | sudo tee /proc/sys/kernel/sched_rt_runtime_us
+
+modify script to ARM, run for every core
+```
 # Sensor
 Installed NanoSDK client github.com/emqx/NanoSDK
 
