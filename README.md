@@ -26,6 +26,7 @@ Disable CPU frequency scaling (lost after rebooting):
 echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 
 Pin interrupts away from RT cores:
+```
 for i in /proc/irq/*/smp_affinity; do
     echo 1 > $i
 done
@@ -33,6 +34,7 @@ done
 for pid in $(ps -e -o pid=); do
     taskset -pc 0 $pid 2>/dev/null
 done
+```
 
 Add memory lock in program (.c code): 
 mlockall(MCL_CURRENT | MCL_FUTURE);
