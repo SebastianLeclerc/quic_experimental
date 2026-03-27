@@ -52,7 +52,7 @@ cd NanoSDK
 git submodule update --init --recursive 
 mkdir build && cd build
 cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
-ninja #Compile it
+ninja
 sudo ninja install; sudo ldconfig
 ```
 Compile demo script with correct links:
