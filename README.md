@@ -1,3 +1,11 @@
+```
+Todo:
+Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
+https://docs.emqx.com/en/
+https://www.suse.com/c/cpu-isolation-practical-example-part-5/
+https://ieeexplore-ieee-org.ep.bib.mdh.se/stamp/stamp.jsp?tp=&arnumber=10279305
+```
+
 # quic_experimental
 Source for modified EMQX, NanoSDK IoT MQTT over QUIC project
 
@@ -10,7 +18,7 @@ Edge & Cloud: RPI 5 Model B (4GB)
 # Operating system & real-time optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
 
-After installing OS, followed instructions at to build new kernel (with PREEMPT_RT): https://www.raspberrypi.com/documentation/computers/linux_kernel.html
+After installing OS, followed instructions at to build new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
 
 Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, rebooted.
 
@@ -36,12 +44,7 @@ Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3]
 *Keep priority High, e.g. probably, 30-60, higher than all kernel non-RT tasks, not starving network
 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
-```
-Todo:
-Add memory lock in program (.c code):  mlockall(MCL_CURRENT | MCL_FUTURE);
-Add timestamp in begining/end.
-Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
-```
+
 # Sensor
 Installed NanoSDK client github.com/emqx/NanoSDK
 
@@ -77,7 +80,7 @@ sudo taskset -c 3 chrt -f 80 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/1
 ```
 
 # Edge
-Install EMQX broker via Docker https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html
+Install EMQX broker via Docker [https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html](https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html)
 
 And setup MQTT over QUIC
 
