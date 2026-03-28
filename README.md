@@ -14,7 +14,20 @@ After installing OS, followed instructions at to build new kernel (with PREEMPT_
 
 Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, rebooted.
 
-After complete and rebooted, verified that PREEMPT_RT is enabled (```uname -a #Shows this```).
+After complete and rebooted, verified that PREEMPT_RT is enabled (```uname -a #Shows this```). Note, it can happen that e.g., ```apt upgrade``` overwrites the kernel, in that case just reinstall it via:
+
+```
+cd linux
+make
+sudo make modules_install
+KERNEL=kernel_2712 # For RPI 5 Model B, see documentation above otherwise.
+sudo cp /boot/firmware/$KERNEL.img /boot/firmware/$KERNEL-backup.img
+sudo cp arch/arm64/boot/Image.gz /boot/firmware/$KERNEL.img
+sudo cp arch/arm64/boot/dts/broadcom/*.dtb /boot/firmware/
+sudo cp arch/arm64/boot/dts/overlays/*.dtb* /boot/firmware/overlays/
+sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
+sudo reboot
+```
 
 Run ```rtoptimization.sh``` to optimize core 1-3 for running RT tasks.
 
