@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/mman.h>
 
 #define CONN 1
 #define SUB 2
@@ -58,8 +59,8 @@ static nng_msg *mqtt_msg_compose(int type, int qos, char *topic, char *payload)
         nng_mqtt_msg_set_publish_qos(msg, qos);
         nng_mqtt_msg_set_publish_retain(msg, 0);
         nng_mqtt_msg_set_publish_topic(msg, topic);
-	nng_mqtt_msg_set_publish_payload(
-            msg, (uint8_t *)payload, strlen(payload)); //closer to publish
+        nng_mqtt_msg_set_publish_payload(
+            msg, (uint8_t *)payload, strlen(payload)); // closer to publish
     }
     return msg;
 }
@@ -81,7 +82,6 @@ static int msg_send_cb(void *rmsg, void *arg)
     printf("[Msg Sent][%s]...\n", (char *)arg);
     return 0;
 }
-
 
 char *build_message(uint64_t seq, size_t random_size)
 {
@@ -131,7 +131,7 @@ int client(const char *url, const char *qos, const char *topic, size_t random_by
         printf("error in quic client open.\n");
     }
 
-    if (silent == 0) 
+    if (silent == 0)
     {
         if (0 != nng_mqtt_quic_set_connect_cb(&sock, connect_cb, (void *)arg) ||
             0 != nng_mqtt_quic_set_disconnect_cb(&sock, disconnect_cb, (void *)arg) ||
@@ -206,6 +206,13 @@ int client(const char *url, const char *qos, const char *topic, size_t random_by
 
 int main(int argc, char **argv)
 {
+    mlockall(MCL_CURRENT | MCL_FUTURE);
+    // Start of experiment
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    uint64_t send_ns = (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
+    printf("Start: %lu ns\n", send_ns);
+
     srand(time(NULL));
     int rc;
 
