@@ -49,13 +49,13 @@ else
 fi
 
 # Check global memory lock limit
-if grep -q "^#DefaultLimitMEMLOCK=8M" /etc/systemd/system.conf; then
+if grep -q "DefaultLimitMEMLOCK=infinity" /etc/systemd/system.conf; then
+    echo "Global memory already configured, nice!"
+else
     echo "Fixing global memory lock :("
     sudo sed -i 's/^#DefaultLimitMEMLOCK=8M/DefaultLimitMEMLOCK=infinity/' /etc/systemd/system.conf
     sudo systemctl daemon-reexec
     error=1
-else
-    echo "Global memory already configured, nice!"
 fi
 
 # Check user memory access limit
