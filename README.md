@@ -20,7 +20,7 @@ Run ```rtoptimization.sh``` to optimize core 1-3 for running RT tasks.
 
 Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
 
-Keep priority High, e.g. probably, 30-60, higher than all kernel non-RT tasks, not starving network
+*Keep priority High, e.g. probably, 30-60, higher than all kernel non-RT tasks, not starving network
 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 ```
