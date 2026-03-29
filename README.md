@@ -1,7 +1,7 @@
 ```
 Todo:
 Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
-https://docs.emqx.com/en/
+https://docs.emqx.com/en/emqx/latest/mqtt-over-quic/introduction.html
 https://www.suse.com/c/cpu-isolation-practical-example-part-5/
 https://ieeexplore-ieee-org.ep.bib.mdh.se/stamp/stamp.jsp?tp=&arnumber=10279305
 ```
