@@ -84,7 +84,7 @@ Install EMQX broker via Docker [https://docs.emqx.com/en/emqx/latest/deploy/inst
 
 And setup MQTT over QUIC
 
-Pin container to core 1 and restart it: ```sudo docker update --cpuset-cpus="1" emqxQUIC && sudo docker restart emqxQUIC #Where emqxQUIC is the container name```
+Pin container to core 1 and restart it: ```sudo docker update --cpuset-cpus="1" emqxQUIC; sudo docker restart emqxQUIC #Where emqxQUIC is the container name```
 
 # Cloud
 Installed NanoSDK client github.com/emqx/NanoSDK
