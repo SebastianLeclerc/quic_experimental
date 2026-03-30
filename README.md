@@ -4,6 +4,15 @@ Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
 https://docs.emqx.com/en/emqx/latest/mqtt-over-quic/introduction.html
 https://www.suse.com/c/cpu-isolation-practical-example-part-5/
 https://ieeexplore-ieee-org.ep.bib.mdh.se/stamp/stamp.jsp?tp=&arnumber=10279305
+Netflix recommends bandwidth req. of 3 mbps, or 5 mbps for 720p HD or 1080p FHD
+Max send probably: 1 048 563 B ~ 1.04 MB
+timestamp is "relatively" close to network stack
+Change from CLOCK_REALTIME to CLOCK_TAI?
+MQTT5? Baseline Mosquitto MQTT (+/-sec)?
+Real cloud?
+Mobile nodes?
+Head-of-line blocking simulation?
+Diff QoS? (MQTT QoS 0 = fastest (no ack), 1 = ACK, might duplicate, 2 = most reliable, only once)
 ```
 
 # quic_experimental
@@ -18,7 +27,9 @@ Edge & Cloud: RPI 5 Model B (4GB)
 # Operating system & real-time optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
 
-After installing OS, followed instructions at to build new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
+After installing OS, followed instructions at to download, natively build, customize and install a new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
+
+<!-- https://www.youtube.com/watch?v=nDJETVboL4Y -->
 
 Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, rebooted.
 
@@ -46,7 +57,8 @@ Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3]
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 
 # Sensor
-Installed NanoSDK client github.com/emqx/NanoSDK
+Installed NanoSDK client [https://github.com/emqx/NanoSDK
+](https://github.com/emqx/NanoSDK). Avoid "NanoMQT" because it adds another translation layer (TCP->QUIC).
 
 ```
 git clone https://github.com/emqx/NanoSDK
@@ -63,15 +75,16 @@ Compile demo script with correct links and test it:
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
-./quic_client conn 'mqtt-quic://192.168.0.29:14567' #Default QUIC port, simple connection test.
+./quic_client conn 'mqtt-quic://192.168.0.29:14567' #Default QUIC port, simple connection test to MQTT broker.
 ```
 Verify connection:
 ```
-sudo docker exec -it CONTAINERNAME sh #Go into the container
+sudo docker exec -it emqxQUIC sh #Go into the container
 emqx ctl clients list #Should show the client IP
 ```
 Copy pub.c, compile it, and test it out!
 ```
+gcc -O2 pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o pub
 #For example:
 #Pin in core 3, FIFO, PRI 80, Publish MQTT topic sensor/1 with QoS 0, 10 B, 10 msgs, 1 s duration, silent-mode.
 #And
@@ -93,6 +106,7 @@ See steps above in # Sensor
 
 Copy sub.c, compile it, and test it out!
 ```
+gcc -O2 sub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -pthread -ldl -o sub
 #For example:
 cd ~/NanoSDK/demo/quic_mqtt
 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
@@ -100,3 +114,6 @@ cd ~/NanoSDK/demo/quic_mqtt
 CTRL+C #Interrupt and save statistics after sensors finished sending.
 cat messages.log #Contains: recv_timestamp,topic,seq,send_timestamp,random_data
 ```
+
+# Security
+
