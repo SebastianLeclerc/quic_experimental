@@ -98,6 +98,8 @@ And setup MQTT over QUIC. Note that container does not autostart on boot, defaul
 
 Useful commands, files:
 ```
+sudo tcpdump -i wlan0 -w quic_capture.pcap udp port 14567 # Can very QUIC via packet capture
+
 sudo docker update --cpuset-cpus="1" emqxQUIC; sudo docker restart emqxQUIC #Pin to core 1, restart. emqxQUIC is the container name
 sudo docker exec -it emqxQUIC sh #Go into the container
 #Following are inside the container
@@ -132,10 +134,28 @@ QUIC requires TLS 1.3, meaning only approved ciphers are allowed:
 - Asymmetric: ECDHE only (P‑256, P‑384, P‑521)
 - Certificate RSA (typically 2048–4096 bit), ECDSA (P‑256, P‑384)
 
-```
 Check certificate/key details in the Edge
+```
 sudo docker exec -it emqxQUIC sh
 cd etc/certs/
 openssl x509 -in cert.pem -text -noout
 openssl pkey -in key.pem -text -noout
+```
+
+Change to ECDSA (faster than RSA) encryption
+```
+openssl ecparam -genkey -name prime256v1 -out ECDSAkey.pem
+openssl req -new -x509 -key ECDSAkey.pem -out ECDSAcert.pem -days 365 -subj "/CN=edge"
+#Then backup/copy new *key.pem and *cert.pem files into etc/certs/. Default key/cert is key.pem, cert.pem.
+#And restart container
+sudo docker restart emqxQUIC
+```
+
+```
+Maybe useful? Not sure if cached atm
+authz cache-clean all         # Clears authorization cache on all nodes
+authz cache-clean node <Node> # Clears authorization cache on given node
+authz cache-clean <ClientId>  # Clears authorization cache for given client
+pem_cache clean all         # Clears x509 certificate cache on all nodes
+pem_cache clean node <Node> # Clears x509 certificate cache on given node
 ```
