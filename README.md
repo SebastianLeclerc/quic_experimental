@@ -116,12 +116,11 @@ See steps above in # Sensor
 Copy sub.c, compile it, and test it out!
 ```
 gcc -O2 sub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -pthread -ldl -o sub
-#For example:
-cd ~/NanoSDK/demo/quic_mqtt
-#Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
-./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0
+cd ~/NanoSDK/demo/quic_mqtt #Contains demo scripts
+
+./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
 CTRL+C #Interrupt and save statistics after sensors finished sending.
-cat messages.log #Contains: recv_timestamp,topic,seq,send_timestamp,random_data
+cat messages.log #Contains: recv_ts,seq,send_ts,rnd_len
 ```
 
 # Security
