@@ -77,11 +77,8 @@ cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
 ./quic_client conn 'mqtt-quic://192.168.0.29:14567' #Default QUIC port, simple connection test to MQTT broker.
 ```
-Verify connection:
-```
-sudo docker exec -it emqxQUIC sh #Go into the container
-emqx ctl clients list #Should show the client IP
-```
+Verify connection in Edge, see below.
+
 Copy pub.c, compile it, and test it out!
 ```
 gcc -O2 pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o pub
@@ -93,11 +90,21 @@ sudo taskset -c 3 chrt -f 80 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/1
 ```
 
 # Edge
-Install EMQX broker via Docker [https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html](https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html)
+Install docker [https://docs.docker.com/engine/install/debian/](https://docs.docker.com/engine/install/debian/)
 
-And setup MQTT over QUIC
+Install EMQX MQTT broker [https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html](https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html)
 
-Pin container to core 1 and restart it: ```sudo docker update --cpuset-cpus="1" emqxQUIC; sudo docker restart emqxQUIC #Where emqxQUIC is the container name```
+And setup MQTT over QUIC. Note that container does not autostart on boot, default config accepts 0.0.0.0:1883, 0.0.0.0:8883, etc.
+
+Useful commands, files:
+```
+sudo docker update --cpuset-cpus="1" emqxQUIC; sudo docker restart emqxQUIC #Pin to core 1, restart. emqxQUIC is the container name
+sudo docker exec -it emqxQUIC sh #Go into the container
+#Following are inside the container
+emqx ctl clients list #Should show the client IP
+emqx ctl listeners #Should show QUIC enable
+/opt/emqx/etc/base.hocon #Needs QUIC listener
+```
 
 # Cloud
 Installed NanoSDK client github.com/emqx/NanoSDK
@@ -116,4 +123,19 @@ cat messages.log #Contains: recv_timestamp,topic,seq,send_timestamp,random_data
 ```
 
 # Security
+EMQX by default use X.509 certificate, RSA 2048-bit public key, signed with sha256WithRSAEncryption and a corresponding private RSA 2048-bit private key. Generally secure until QC.
 
+EMQX by defauly only uses server-only authentication. Not secure.
+
+QUIC requires TLS 1.3, meaning only approved ciphers are allowed: 
+- Symmetric: AES‑128‑GCM, AES‑256‑GCM, CHACHA20‑POLY1305
+- Asymmetric: ECDHE only (P‑256, P‑384, P‑521)
+- Certificate RSA (typically 2048–4096 bit), ECDSA (P‑256, P‑384)
+
+```
+Check certificate/key details in the Edge
+sudo docker exec -it emqxQUIC sh
+cd etc/certs/
+openssl x509 -in cert.pem -text -noout
+openssl pkey -in key.pem -text -noout
+```
