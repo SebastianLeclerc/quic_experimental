@@ -1,5 +1,7 @@
 ```
 Todo:
+Is it really, e.g., 200 B? OR + SEQ, Timestamp, etc.?
+
 Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
 https://docs.emqx.com/en/emqx/latest/mqtt-over-quic/introduction.html
 https://www.suse.com/c/cpu-isolation-practical-example-part-5/
