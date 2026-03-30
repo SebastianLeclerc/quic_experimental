@@ -20,9 +20,9 @@ Source for modified EMQX, NanoSDK IoT MQTT over QUIC project
 
 
 # Hardware
-Sensor: RPi 4 Model B (4GB)
+Sensor: RPi 4 Model B (4GB) ... Edge: RPI 5 Model B (4GB) ... Cloud: RPI 5 Model B (4GB)
 
-Edge & Cloud: RPI 5 Model B (4GB)
+All three nodes are currently connected to one one router over Wi-Fi.
 
 # Operating system & real-time optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
