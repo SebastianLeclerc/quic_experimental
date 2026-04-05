@@ -1,6 +1,5 @@
 ```
 Todo:
-Is it really, e.g., 200 B? OR + SEQ, Timestamp, etc.?
 
 fk me: https://github.com/emqx/emqtt-bench
 
@@ -13,7 +12,6 @@ Max send probably: 1 048 563 B ~ 1.04 MB
 timestamp is "relatively" close to network stack
 Change from CLOCK_REALTIME to CLOCK_TAI?
 MQTT5? Baseline Mosquitto MQTT (+/-sec)?
-Real cloud?
 Mobile nodes?
 Head-of-line blocking simulation?
 Diff QoS? (MQTT QoS 0 = fastest (no ack), 1 = ACK, might duplicate, 2 = most reliable, only once)
@@ -113,16 +111,49 @@ emqx ctl listeners #Should show QUIC enable
 ```
 
 # Cloud
-Installed NanoSDK client github.com/emqx/NanoSDK
+Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
 
-See steps above in # Sensor
+Setup the VM network (Paravirtualized) with a Ephemeral Public IP. Downloaded the VM's SSH keys.
 
-Copy sub.c, compile it, and test it out!
+Then configured the VM, installing neccessary packages to run sub.c:
 ```
+ssh -i ssh-key-2026-04-05.key ubuntu@79.76.50.54
+sudo apt update
+sudo apt upgrade -y
+sudo reboot now
+sudo apt install nano
+#Copy sub.c to ~
+sudo apt install gcc
+sudo apt install git
+git clone https://github.com/emqx/NanoSDK ; cd NanoSDK
+git submodule update --init --recursive
+mkdir build && cd build
+sudo apt install cmake
+sudo apt install ninja-build
+sudo apt install -y build-essential
+sudo apt install -y libssl-dev pkg-config
+cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
+ninja
+sudo ninja install; sudo ldconfig
+cd ~
 gcc -O2 sub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -pthread -ldl -o sub
-cd ~/NanoSDK/demo/quic_mqtt #Contains demo scripts
+```
 
-./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
+Configured network between VM and edge:
+```
+sudo apt install iputils-ping #For general ping reachability
+sudo apt install netcat-openbsd #For nc IP:Port reachability
+#Check local Public IP via curl
+curl https://api.ipify.org
+#Added Port Forwarding Rule in local router for: UDP, Internal/External IP:Port
+#Connectivity test:
+sudo tcpdump -n -i any udp port 14567 #Start a listener on the edge
+nc -uvz IP PORT #Send traffic to edge
+#If OK can now test demo program
+cd ~/NanoSDK/demo/quic_mqtt
+./quic_client conn mqtt-quic://IP:PORT
+#And sub.c
+./sub sub mqtt-quic://IP:14567 0 sensor/# 0 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
 CTRL+C #Interrupt and save statistics after sensors finished sending.
 cat messages.log #Contains: recv_ts,seq,send_ts,rnd_len
 ```
