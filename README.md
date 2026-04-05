@@ -152,8 +152,9 @@ nc -uvz IP PORT #Send traffic to edge
 #If OK can now test demo program
 cd ~/NanoSDK/demo/quic_mqtt
 ./quic_client conn mqtt-quic://IP:PORT
-#And sub.c
-./sub sub mqtt-quic://IP:14567 0 sensor/# 0 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
+#And test sub.c program
+#Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
+./sub sub mqtt-quic://IP:14567 0 sensor/# 0
 CTRL+C #Interrupt and save statistics after sensors finished sending.
 cat messages.log #Contains: recv_ts,seq,send_ts,rnd_len
 ```
