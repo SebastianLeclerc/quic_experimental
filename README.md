@@ -117,7 +117,7 @@ Setup the VM network (Paravirtualized) with a Ephemeral Public IP. Downloaded th
 
 Then configured the VM, installing neccessary packages to run sub.c:
 ```
-ssh -i ssh-key-2026-04-05.key ubuntu@79.76.50.54
+ssh -i SSH-KEY-FILE.key USER@IP
 sudo apt update
 sudo apt upgrade -y
 sudo reboot now
