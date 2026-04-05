@@ -18,13 +18,12 @@ Diff QoS? (MQTT QoS 0 = fastest (no ack), 1 = ACK, might duplicate, 2 = most rel
 ```
 
 # quic_experimental
-Source for modified EMQX, NanoSDK IoT MQTT over QUIC project
-
+Setup for modified MQTT over QUIC project using EMQX, NanoSDK, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
 
 # Hardware
-Sensor: RPi 4 Model B (4GB) ... Edge: RPI 5 Model B (4GB) ... Cloud: RPI 5 Model B (4GB)
+Sensor: RPi 4 Model B (4GB) ...Wi-Fi 802.11ac... Edge: RPI 5 Model B (4GB) ...Wi-Fi 802.11ac to ISP... Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
 
-All three nodes are currently connected to one one router over Wi-Fi.
+Local router is a Sagemcom Broadband SAS (version 3.0_CU)
 
 # Operating system & real-time optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
