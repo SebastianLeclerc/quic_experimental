@@ -99,6 +99,8 @@ And setup MQTT over QUIC. Note that container does not autostart on boot, defaul
 
 Useful commands, files:
 ```
+sudo rfkill block wifi #Kill wifi
+
 sudo tcpdump -i wlan0 -w quic_capture.pcap udp port 14567 #Verification of QUIC via packet capture for WireShark
 
 sudo docker update --cpuset-cpus="1" emqxQUIC; sudo docker restart emqxQUIC #Pin to core 1, restart. emqxQUIC is the container name
