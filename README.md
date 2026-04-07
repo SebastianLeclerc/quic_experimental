@@ -175,14 +175,17 @@ curl https://api.ipify.org
 #Connectivity test:
 sudo tcpdump -n -i any udp port 14567 #Start a listener on the edge
 nc -uvz IP PORT #Send traffic to edge
-#If OK can now test demo program
+```
+
+If network is OK can now test demo/sub program
+```
 cd ~/NanoSDK/demo/quic_mqtt
 ./quic_client conn mqtt-quic://IP:PORT
 #And test sub.c program
 #Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
 ./sub sub mqtt-quic://IP:14567 0 sensor/# 0
 CTRL+C #Interrupt and save statistics after sensors finished sending.
-cat messages.log #Contains: recv_ts,seq,send_ts,rnd_len
+cat messages.log #Contains: topic,recv_ts,seq,send_ts,rnd_len
 ```
 # Time Synchronization
 Configure the edge to be the NTP time source
