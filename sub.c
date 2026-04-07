@@ -89,7 +89,7 @@ void *logger_thread(void *arg)
         while (last != w) {
             measurement_t *m = &ring[last];
             fprintf(f, "%s,%llu,%llu,%llu,%u\n",
-		m->topic, m->recv_ts, m->seq, m->send_ts, m->rnd_len);
+		m->topic, (unsigned long long)m->recv_ts, (unsigned long long)m->seq, (unsigned long long)m->send_ts, m->rnd_len);
             last = (last + 1) % RING_SIZE;
         }
         fflush(f);
