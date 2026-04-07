@@ -183,6 +183,55 @@ cd ~/NanoSDK/demo/quic_mqtt
 CTRL+C #Interrupt and save statistics after sensors finished sending.
 cat messages.log #Contains: recv_ts,seq,send_ts,rnd_len
 ```
+# Time Synchronization
+Configure the edge to be the NTP time source
+
+On all nodes
+```
+sudo apt update
+sudo apt install chrony -y
+```
+
+Configure edge: ```/etc/chrony/chrony.conf```
+```
+server ntp.se.pool.ntp.org iburst
+server 0.europe.pool.ntp.org iburst
+server 1.europe.pool.ntp.org iburst
+server time.google.com iburst
+#allow 0.0.0.0/0
+allow 192.168.0.0/24
+allow CLOUD_IP/0
+local stratum 10
+makestep 1 3
+rtcsync
+driftfile /var/lib/chrony/chrony.drift
+log tracking measurements statistics
+logdir /var/log/chrony
+cmdallow 127.0.0.1
+cmdallow 192.168.0.0/24
+```
+
+Other nodes: ```/etc/chrony/chrony.conf```
+```
+server 192.168.0.34 iburst prefer
+server ntp.se.pool.ntp.org iburst
+server 0.europe.pool.ntp.org iburst
+makestep 1 3
+rtcsync
+driftfile /var/lib/chrony/chrony.drift
+```
+
+Set timezone in cloud to  same as RPi ```sudo timedatectl set-timezone Europe/Stockholm```
+
+In router, add port forwarding rule for NTP, port 123, Internal/External IP
+
+Verification
+```
+chronyc sources -v #Shows time source marked with ^*
+chronyc clients #Shows NTP clients
+sudo systemctl restart chrony #After changes to the conf
+curl https://api.ipify.org #Check public IP
+```
 
 # Security
 EMQX by default use X.509 certificate, RSA 2048-bit public key, signed with sha256WithRSAEncryption and a corresponding private RSA 2048-bit private key. Generally secure until QC.
