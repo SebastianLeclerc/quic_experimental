@@ -117,7 +117,8 @@ emqx ctl listeners #Should show QUIC enable
 /opt/emqx/etc/base.hocon #Needs QUIC listener
 ```
 
-To enable measurement in edge
+To enable measurement in edge:
+
 Go to Web GUI and login, e.g.: ```http://192.168.0.34:18083/``` with admin + public (default, has to change). Go to Integration> Rules> Create> Either an ingress or an egress rule with “Action” to republish matches to, e.g., ```__edge/egress```. Note that message time broker is typically negligable, hence both rules probably not needed.
 ```
 //Egress rule
