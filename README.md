@@ -283,14 +283,13 @@ After everything is setup, assuming fresh reboot:
 5. edge@edge:~ $ sudo docker restart CONTAINERNAME
 6. edge@edge:~ $ rm edge_timestamps.log; rm egress.log; mosquitto_sub -h 127.0.0.1 -t "__edge/#" -v >> edge_timestamps.log
 7. cloud@cloud:~ $ sudo ./sub sub mqtt-quic://80.216.216.58:14567 0 sensor/# 0
-8. sensor@sensor:~ $ #Run the following:
-#PERIODIC 100 B
+8. sensor@sensor:~ $ #Run the following: ```#PERIODIC 100 B
 sudo taskset -c 1 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 10 60 1 -p & 
 sudo taskset -c 2 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 10 60 1 -p &
 sudo taskset -c 3 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/3 100 10 60 1 -p & 
 
 wait
-echo "PERIODIC RUN FINISHED"
+echo "PERIODIC RUN FINISHED"```
 9. 'CTRL+C' listener in edge and cloud.
 10. edge@edge:~ $ python3 elog.py
 11. 
