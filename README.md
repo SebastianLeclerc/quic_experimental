@@ -76,18 +76,24 @@ Compile demo script with correct links and test it:
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
-./quic_client conn 'mqtt-quic://192.168.0.29:14567' #Default QUIC port, simple connection test to MQTT broker.
+./quic_client conn 'mqtt-quic://192.168.0.34:14567' #Default QUIC port, simple connection test to MQTT broker.
 ```
 Verify connection in Edge, see below.
 
 Copy pub.c, compile it, and test it out!
 ```
 gcc -O2 pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o pub
-#For example:
-#Pin in core 3, FIFO, PRI 80, Publish MQTT topic sensor/1 with QoS 0, 10 B, 10 msgs, 1 s duration, silent-mode.
-#And
-#Pin in core 2, FIFO, PRI 78, Publish MQTT topic sensor/2 with QoS 0, 10 B, 10 msgs, 1 s duration, silent-mode.
-sudo taskset -c 3 chrt -f 80 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/1 10 10 1 1 & sudo taskset -c 2 chrt -f 78 ./pub pub mqtt-quic://192.168.0.29:14567 0 sensor/2 10 10 1 1
+```
+
+Start 3 threads sending threads, here using: core 1-3, FIFO, Pri 60, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern
+```
+#PERIODIC 100 B
+sudo taskset -c 1 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 10 60 1 -p & 
+sudo taskset -c 2 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 10 60 1 -p &
+sudo taskset -c 3 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/3 100 10 60 1 -p & 
+
+wait
+echo "PERIODIC RUN FINISHED"
 ```
 
 # Edge
@@ -110,6 +116,24 @@ emqx ctl clients list #Should show the client IP
 emqx ctl listeners #Should show QUIC enable
 /opt/emqx/etc/base.hocon #Needs QUIC listener
 ```
+
+To enable measurement in edge
+Go to Web GUI and login, e.g.: http://192.168.0.34:18083/ with admin + public (needs to change). Go to Integration> Rules> Create> Either an ingress or an egress rule with “Action” to republish matches to, e.g., “__edge/egress”. Note that message time broker is typically negligable, hence both rules probably not needed.
+```
+//Egress rule
+SELECT
+  timestamp AS t_edge_egress,
+  clientid,
+  topic,
+  payload
+FROM
+  "$events/message_delivered"
+WHERE
+   peerhost = '192.168.0.30'
+```
+Can then run local logger on edge, e.g. ```mosquitto_sub -h 127.0.0.1 -t "__edge/#" -v >> edge_timestamps.log``` to capture the edge traffic in a log.
+Then run elog.py to parse the data into egress.log
+
 
 # Cloud
 Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
