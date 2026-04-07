@@ -272,3 +272,10 @@ authz cache-clean <ClientId>  # Clears authorization cache for given client
 pem_cache clean all         # Clears x509 certificate cache on all nodes
 pem_cache clean node <Node> # Clears x509 certificate cache on given node
 ```
+
+# Measurement
+After everything is setup, assuming fresh reboot:
+
+1. sensor@sensor:~ $ ./rtoptimizaion.sh
+2. edge@edge:~ $ ./rtoptimization.sh
+
