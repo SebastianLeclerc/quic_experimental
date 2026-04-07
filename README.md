@@ -213,7 +213,7 @@ cmdallow 192.168.0.0/24
 
 Other nodes: ```/etc/chrony/chrony.conf```
 ```
-server 192.168.0.34 iburst prefer
+server LOCAL_OR_PUBLIC_IP iburst prefer
 server ntp.se.pool.ntp.org iburst
 server 0.europe.pool.ntp.org iburst
 makestep 1 3
