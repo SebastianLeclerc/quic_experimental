@@ -132,7 +132,7 @@ WHERE
    peerhost = '192.168.0.30'
 ```
 Can then run local logger on edge, e.g. ```mosquitto_sub -h 127.0.0.1 -t "__edge/#" -v >> edge_timestamps.log``` to capture the edge traffic in a log.
-Then run ```elog.py``` to parse the data into egress.log
+Then run ```elog.py``` to parse the bin data into egress.log human readable format (topic,egresstime,seq).
 
 
 # Cloud
