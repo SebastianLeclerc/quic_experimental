@@ -4,7 +4,7 @@
 * Example: ./sub sub mqtt-quic://192.168.0.29:14567 0 sensor/# 0
 *
 * Uses keep alive thread to maintain connection > 20 s (default disconnect)
-* Logs recv_ts,seq,send_ts,rnd_len into messages.log in the same folder
+* Logs topic,recv_ts,seq,send_ts,rnd_len into messages.log in the same folder
 */
 
 #include <nng/nng.h>
@@ -29,6 +29,7 @@
 #define RING_SIZE 200000
 
 typedef struct {
+    char     topic[10]; //Intentionally small
     uint64_t recv_ts;
     uint64_t seq;
     uint64_t send_ts;
@@ -44,7 +45,7 @@ static nng_socket *g_sock = NULL;
 // --------------------------
 conf_quic config_user = {
     .tls = {
-        .enable = false,
+        .enable = false, //breaks program if true and configured, not implemented?
         .cafile = "",
         .certfile = "",
         .keyfile  = "",
@@ -80,18 +81,15 @@ void *ping_thread(void *arg) {
 void *logger_thread(void *arg)
 {
     FILE *f = fopen("messages.log", "w");
-    fprintf(f, "recv_ts,seq,send_ts,rnd_len\n");
+    fprintf(f, "topic,recv_ts,seq,send_ts,rnd_len\n");
 
     int last = 0;
     while (1) {
         int w = ring_write;
         while (last != w) {
             measurement_t *m = &ring[last];
-            fprintf(f, "%llu,%llu,%llu,%u\n",
-                (unsigned long long)m->recv_ts,
-                (unsigned long long)m->seq,
-                (unsigned long long)m->send_ts,
-                m->rnd_len);
+            fprintf(f, "%s,%llu,%llu,%llu,%u\n",
+		m->topic, m->recv_ts, m->seq, m->send_ts, m->rnd_len);
             last = (last + 1) % RING_SIZE;
         }
         fflush(f);
@@ -112,11 +110,11 @@ mqtt_msg_compose(int type, int qos, char *topic, char *payload)
         nng_mqtt_msg_set_packet_type(msg, NNG_MQTT_CONNECT);
 
         nng_mqtt_msg_set_connect_proto_version(msg, 4);
-        
+
         nng_mqtt_msg_set_connect_keep_alive(msg, 10);
 
         nng_mqtt_msg_set_connect_clean_session(msg, true);
-    } 
+    }
     else if (type == SUB) {
         nng_mqtt_msg_set_packet_type(msg, NNG_MQTT_SUBSCRIBE);
 
@@ -155,17 +153,15 @@ static int disconnect_cb(void *rmsg, void *arg)
 // --------------------------
 static int msg_recv_cb(void *rmsg, void *arg)
 {
-    int silent = *(int *)arg;
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    uint64_t recv_ns = (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 
     nng_msg *msg = rmsg;
     uint32_t topicsz, payloadsz;
 
     const uint8_t *topic   = nng_mqtt_msg_get_publish_topic(msg, &topicsz);
     const uint8_t *payload = nng_mqtt_msg_get_publish_payload(msg, &payloadsz);
-
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    uint64_t recv_ns = (uint64_t)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 
     if (payloadsz < 16)
         return 0;
@@ -193,10 +189,11 @@ static int msg_recv_cb(void *rmsg, void *arg)
     uint32_t rnd_len = payloadsz - 16;
 
     int w = ring_write;
+    snprintf(ring[w].topic, sizeof(ring[w].topic), "%s", topic);
     ring[w].recv_ts = recv_ns;
     ring[w].seq     = seq;
     ring[w].send_ts = send_ns;
-    ring[w].rnd_len = rnd_len;
+    ring[w].rnd_len = rnd_len+16; //+16 due to size of seq+send_ts=16 being subtracted in pub
     ring_write = (w + 1) % RING_SIZE;
 
     return 0;
