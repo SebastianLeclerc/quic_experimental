@@ -270,12 +270,13 @@ After everything is setup, assuming fresh reboot:
 3. edge@edge:~ $ ./rtoptimization.sh
 4. edge@edge:~ $ sudo docker update --cpuset-cpus="1" CONTAINERNAME
 5. edge@edge:~ $ sudo docker restart CONTAINERNAME
-6. edge@edge:~ $ rm edge_timestamps.log; rm egress.log; mosquitto_sub -h 127.0.0.1 -t "__edge/#" -v >> edge_timestamps.log
-7. cloud@cloud:~ $ sudo ./sub sub mqtt-quic://80.216.216.58:14567 0 sensor/# 0
+6. cloud@cloud:~ $ sudo ./sub sub mqtt-quic://80.216.216.58:14567 0 sensor/# 0
+7. edge@edge:~ $ sudo taskset -c 2 chrt -f 60 ./sub sub mqtt-quic://192.168.0.34:14567 0 sensor/# 0
 8. sensor@sensor:~ $ #Run one of the tests below
 9. 'CTRL+C' listener in edge and cloud.
-10. edge@edge:~ $ python3 elog.py
-11. 
+10. home@home:~ $ scp edge@192.168.0.34:/home/edge/edge.log . 
+11. home@home:~ $ scp -i ../ssh-key-2026-04-05.key ubuntu@79.76.50.54:/home/ubuntu/cloud.log .
+12. home@home:~ $ python result.py edge.log cloud.log > results.csv
 
 Example: Start 3 threads sending threads, here using: core 1-3, FIFO, Pri 60, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
 ```
