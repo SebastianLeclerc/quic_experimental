@@ -277,13 +277,14 @@ After everything is setup, assuming fresh reboot:
 10. home@home:~ $ scp edge@192.168.0.34:/home/edge/edge.log . 
 11. home@home:~ $ scp -i ../ssh-key-2026-04-05.key ubuntu@79.76.50.54:/home/ubuntu/cloud.log .
 12. home@home:~ $ python result.py edge.log cloud.log > results.csv
+13. 
 
 Example: Start 3 threads sending threads, here using: core 1-3, FIFO, Pri 60, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
 ```
 #PERIODIC 100 B
-sudo taskset -c 1 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 10 60 1 -p & 
-sudo taskset -c 2 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 10 60 1 -p &
-sudo taskset -c 3 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/3 100 10 60 1 -p & 
+sudo taskset -c 1 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 10 300 1 -p & 
+sudo taskset -c 2 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 10 300 1 -p &
+sudo taskset -c 3 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/3 100 10 300 1 -p & 
 
 wait
 echo "PERIODIC RUN FINISHED"
