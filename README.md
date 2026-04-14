@@ -1,23 +1,4 @@
-```
-Todo:
-
-fk me: https://github.com/emqx/emqtt-bench
-
-Investigate SCHED_DEADLINE, requires root and "sched_setattr" in the code
-https://docs.emqx.com/en/emqx/latest/mqtt-over-quic/introduction.html
-https://www.suse.com/c/cpu-isolation-practical-example-part-5/
-https://ieeexplore-ieee-org.ep.bib.mdh.se/stamp/stamp.jsp?tp=&arnumber=10279305
-Netflix recommends bandwidth req. of 3 mbps, or 5 mbps for 720p HD or 1080p FHD
-Max send probably: 1 048 563 B ~ 1.04 MB
-timestamp is "relatively" close to network stack
-Change from CLOCK_REALTIME to CLOCK_TAI?
-MQTT5? Baseline Mosquitto MQTT (+/-sec)?
-Mobile nodes?
-Head-of-line blocking simulation?
-Diff QoS? (MQTT QoS 0 = fastest (no ack), 1 = ACK, might duplicate, 2 = most reliable, only once)
-```
-
-# quic_experimental
+# Info
 Setup for modified MQTT over QUIC project using EMQX, NanoSDK, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
 
 # Hardware
@@ -107,23 +88,7 @@ emqx ctl listeners #Should show QUIC enable
 ```
 
 To enable measurement in edge:
-
-Go to Web GUI and login, e.g.: ```http://192.168.0.34:18083/``` with admin + public (default, has to change). Go to Integration> Rules> Create> Either an ingress or an egress rule with “Action” to republish matches to, e.g., ```__edge/egress```. Note that message time inside the broker is typically negligable, hence both rules probably not needed.
-```
-//Egress rule
-SELECT
-  timestamp AS t_edge_egress,
-  clientid,
-  topic,
-  payload
-FROM
-  "$events/message_delivered"
-WHERE
-   peerhost = '192.168.0.30'
-```
-Can then run local logger on edge, e.g. ```mosquitto_sub -h 127.0.0.1 -t "__edge/#" -v >> edge_timestamps.log``` to capture the edge traffic in a log.
-Then run ```elog.py``` to parse the bin data into egress.log human readable format (topic,egresstime,seq).
-
+EMQX uses different timestamps than C "CLOCK_REALTIME". Therefore easier to use local MQTT subscriber in the edge, rather than, e.g., setting up ingress/egress rules to timestamp data.
 
 # Cloud
 Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
@@ -137,6 +102,7 @@ sudo apt update
 sudo apt upgrade -y
 sudo reboot now
 sudo apt install nano
+sudo apt install -y mosquitto-clients
 #Copy sub.c to ~
 sudo apt install gcc
 sudo apt install git
@@ -160,7 +126,7 @@ sudo apt install iputils-ping #For general ping reachability
 sudo apt install netcat-openbsd #For nc IP:Port reachability
 #Check local Public IP via curl
 curl https://api.ipify.org
-#Added Port Forwarding Rule in local router for: UDP, Internal/External IP:Port
+#Added Port Forwarding Rule in local router for: UDP:14567, NTP:123, MQTT:8883, SSH:22 Internal/External IP:Port
 #Connectivity test:
 sudo tcpdump -n -i any udp port 14567 #Start a listener on the edge
 nc -uvz IP PORT #Send traffic to edge
@@ -227,7 +193,7 @@ curl https://api.ipify.org #Check public IP
 ```
 
 # Security
-EMQX by default use X.509 certificate, RSA 2048-bit public key, signed with sha256WithRSAEncryption and a corresponding private RSA 2048-bit private key. Generally secure until QC.
+EMQX by default use X.509 certificate, RSA 2048-bit public key, signed with sha256WithRSAEncryption and a corresponding private RSA 2048-bit private key. Generally secure until Quantum Computing.
 
 EMQX by defauly only uses server-only authentication. Not secure.
 
@@ -236,30 +202,59 @@ QUIC requires TLS 1.3, meaning only approved ciphers are allowed:
 - Asymmetric: ECDHE only (P‑256, P‑384, P‑521)
 - Certificate RSA (typically 2048–4096 bit), ECDSA (P‑256, P‑384)
 
-Check certificate/key details in the Edge
+Start another container with other encryption
 ```
+sudo docker run -d --name CONTAINERNAME \
+  -p 1883:1883 -p 8083:8083 \
+  -p 8084:8084 -p 8883:8883 \
+  -p 18083:18083 \
+  -p 14567:14567/udp \
+  -e EMQX_LISTENERS__QUIC__DEFAULT__keyfile="etc/certs/key.pem" \
+  -e EMQX_LISTENERS__QUIC__DEFAULT__certfile="etc/certs/.pem" \
+  -e EMQX_LISTENERS__QUIC__DEFAULT__ENABLED=true \
+emqx/emqx:5.8.8
+
+#Go into the container and enable QUIC
+sudo docker exec -it CONTAINERNAME sh
+cat >> /opt/emqx/etc/base.hocon << 'EOF'
+listeners.quic.default {
+  enabled = true
+  bind = "0.0.0.0:14567"
+  keyfile = "etc/certs/key.pem"
+  certfile = "etc/certs/cert.pem"
+}
+EOF
+
+#Change the encryption by generating key, and self-signed cert for testing
 sudo docker exec -it CONTAINERNAME sh
 cd etc/certs/
+
+#RSA-2048
+openssl genrsa -out key.pem 2048
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
+
+#RSA-4096
+openssl genrsa -out key.pem 4096
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
+
+#ECDSA P-256
+openssl ecparam -genkey -name prime256v1 -out key.pem #Generate key
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge" 
+
+#ECDSA P-384
+openssl ecparam -genkey -name secp384r1 -out key.pem
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
+
+#Ed25519
+openssl genpkey -algorithm Ed25519 -out key.pem
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
+
+#Verification:
 openssl x509 -in cert.pem -text -noout
-openssl pkey -in key.pem -text -noout
-```
 
-Change to ECDSA (faster than RSA) encryption
-```
-openssl ecparam -genkey -name prime256v1 -out ECDSAkey.pem
-openssl req -new -x509 -key ECDSAkey.pem -out ECDSAcert.pem -days 365 -subj "/CN=edge"
-#Then backup/copy new *key.pem and *cert.pem files into etc/certs/. Default key/cert is key.pem, cert.pem.
-#And restart container
+#Pin in core 1 and restart
+sudo docker update --cpuset-cpus="1" CONTAINERNAME
 sudo docker restart CONTAINERNAME
-```
-
-```
-Maybe useful? Not sure if cached atm
-authz cache-clean all         # Clears authorization cache on all nodes
-authz cache-clean node <Node> # Clears authorization cache on given node
-authz cache-clean <ClientId>  # Clears authorization cache for given client
-pem_cache clean all         # Clears x509 certificate cache on all nodes
-pem_cache clean node <Node> # Clears x509 certificate cache on given node
 ```
 
 # Measurement
