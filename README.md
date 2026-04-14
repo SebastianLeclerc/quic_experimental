@@ -279,7 +279,7 @@ TCP initial security cost evaluation:
 
 QUIC initial security cost evaluation:
 1. Setup quicautomation.sh according to who is pub, sub.
-2. Modify pub.c to log topic,timestamp
+2. Modify pub.c to log timestamp
 ```
 ...
     //printf("Total messages sent: %lu\n", sent_count);
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     fclose(f);
     //etc.
 ```
-3. Modify sub.c logger_thread() to log topic,timestamp
+3. Modify sub.c logger_thread() to log timestamp
 ```
 void *logger_thread(void *arg)
 {
@@ -327,8 +327,23 @@ Calculate and visualize results on TCP and QUIC initial security cost:
 2. python plotminmax.py result.csv sensor-edge #Reads .csv and plots the cost for a particular path
 
 QUIC power storm evaluation:
-1. Modify
-2. Modify quicautomation.sh to use multiple publishers, e.g.:
+1. Modify pub.c to log topic,timestamp
+```
+int main(int argc, char **argv)
+{
+    ...
+    fprintf(f, "%s,%lu\n", argv[4], start_ns);
+    ...
+```
+2. Modify sub.c to log topic,timestamp
+```
+void *logger_thread(void *arg)
+{
+    ...
+    fprintf(f, "%s,%llu\n", m->topic, (unsigned long long)m->recv_ts);
+    ...
+```
+3. Modify quicautomation.sh to use multiple publishers, e.g.:
 ```
 # Example: Start 3 sending threads, here using: core 1-n, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
 SENSOR_CMD="
