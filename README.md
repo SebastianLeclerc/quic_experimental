@@ -271,11 +271,10 @@ After everything is setup, assuming fresh reboot:
 
 **TCP initial security cost evaluation**:
 1. edge@edge:~ $ sudo docker cp CONTAINERNAME:/opt/emqx/etc/certs/cert.pem .
-2. sensor@sensor:~ $ scp edge@192.168.0.34:/home/edge/cert.pem .
-3. cloud@cloud:~ $ scp edge@IP:/home/edge/cert.pem .
-4. edge@edge:~ $ ./tcpautomation.sh
-5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\TCP\rpi5sensor\RSA2048sensor.log, etc.
-6. Stop container on edge, start another one, repeat from 1.
+2. scp cert.pem to cloud and sensor
+3. edge@edge:~ $ ./tcpautomation.sh
+4. scp sensor.log, edge.log, cloud.log to home with file name and path as, e.g., \results\TCP\rpi5sensor\RSA2048sensor.log, etc.
+5. Stop container on edge, start another one, repeat from 1.
 
 **QUIC initial security cost evaluation**:
 1. Setup quicautomation.sh according to who is pub, sub.
