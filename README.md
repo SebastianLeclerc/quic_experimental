@@ -254,6 +254,7 @@ openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
 
 #Verification:
 openssl x509 -in cert.pem -text -noout
+openssl s_client -connect IP:Port -tls1_3 # To see what the server accepts
 
 #Pin in core 1 and restart
 sudo docker update --cpuset-cpus="1" CONTAINERNAME
