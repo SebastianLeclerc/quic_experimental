@@ -354,3 +354,7 @@ sudo taskset -c n ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/n 100 1 1
 "
 ```
 Spreading out the publishers on multiple cores per sensor/n topic.
+
+4. scp sensor*.log, edge*.log, cloud*.log to appropriate folder, e.g., \results\powerstorm\20sensors\
+5. python powerstorm.py #On the .log files and save data in .csv in the format: N,min,p50,p90,max
+6. python powerplot.py #And modify the input .csv file accordingly 
