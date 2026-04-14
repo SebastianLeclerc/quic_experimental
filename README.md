@@ -269,7 +269,7 @@ After everything is setup, assuming fresh reboot:
 4. edge@edge:~ $ sudo docker update --cpuset-cpus="1" CONTAINERNAME
 5. edge@edge:~ $ sudo docker restart CONTAINERNAME
 
-TCP initial security cost evaluation:
+**TCP initial security cost evaluation**:
 1. edge@edge:~ $ sudo docker cp CONTAINERNAME:/opt/emqx/etc/certs/cert.pem .
 2. sensor@sensor:~ $ scp edge@192.168.0.34:/home/edge/cert.pem .
 3. cloud@cloud:~ $ scp edge@IP:/home/edge/cert.pem .
@@ -277,7 +277,7 @@ TCP initial security cost evaluation:
 5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\TCP\rpi5sensor\RSA2048sensor.log, etc.
 6. Stop container on edge, start another one, repeat from 1.
 
-QUIC initial security cost evaluation:
+**QUIC initial security cost evaluation**:
 1. Setup quicautomation.sh according to who is pub, sub.
 2. Modify pub.c to log timestamp
 ```
@@ -322,11 +322,11 @@ void *logger_thread(void *arg)
 5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\QUIC\rpi5sensor\RSA2048sensor.log, etc.
 6. Stop container on edge, start another one, repeat from 1.
 
-Calculate and visualize results on TCP and QUIC initial security cost:
+**Calculate and visualize results on TCP and QUIC initial security cost**:
 1. python initresults.py results\ result.csv #Assumes file structure as \results\TRANSPORT\PLATFORM\ALGORITHMnode.log
 2. python plotminmax.py result.csv sensor-edge #Reads .csv and plots the cost for a particular path
 
-QUIC power storm evaluation:
+**QUIC power storm evaluation**:
 1. Modify pub.c to log topic,timestamp
 ```
 int main(int argc, char **argv)
