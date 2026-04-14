@@ -39,10 +39,11 @@ Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3]
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 
 # Sensor
-Installed NanoSDK client [https://github.com/emqx/NanoSDK
+Installed Mosquitto MQTT Client [https://mosquitto.org/download/](https://mosquitto.org/download/) and NanoSDK client [https://github.com/emqx/NanoSDK
 ](https://github.com/emqx/NanoSDK). Avoid "NanoMQT" because it adds another translation layer (TCP->QUIC).
 
 ```
+sudo apt install -y mosquitto-clients
 git clone https://github.com/emqx/NanoSDK
 sudo apt install cmake
 sudo apt install ninja-build
@@ -70,6 +71,8 @@ gcc -O2 pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypt
 Install docker [https://docs.docker.com/engine/install/debian/](https://docs.docker.com/engine/install/debian/)
 
 Install EMQX MQTT broker [https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html](https://docs.emqx.com/en/emqx/latest/deploy/install-docker.html)
+
+Install Mosquitto MQTT Client ```sudo apt install -y mosquitto-clients``` for TCP-testing.
 
 And setup MQTT over QUIC. Note that container does not autostart on boot, default config accepts 0.0.0.0:1883, 0.0.0.0:8883, etc.
 
@@ -265,22 +268,74 @@ After everything is setup, assuming fresh reboot:
 3. edge@edge:~ $ ./rtoptimization.sh
 4. edge@edge:~ $ sudo docker update --cpuset-cpus="1" CONTAINERNAME
 5. edge@edge:~ $ sudo docker restart CONTAINERNAME
-6. cloud@cloud:~ $ sudo ./sub sub mqtt-quic://80.216.216.58:14567 0 sensor/# 0
-7. edge@edge:~ $ sudo taskset -c 2 chrt -f 60 ./sub sub mqtt-quic://192.168.0.34:14567 0 sensor/# 0
-8. sensor@sensor:~ $ #Run one of the tests below
-9. 'CTRL+C' listener in edge and cloud.
-10. home@home:~ $ scp edge@192.168.0.34:/home/edge/edge.log . 
-11. home@home:~ $ scp -i ../ssh-key-2026-04-05.key ubuntu@79.76.50.54:/home/ubuntu/cloud.log .
-12. home@home:~ $ python result.py edge.log cloud.log > results.csv
-13. 
 
-Example: Start 3 threads sending threads, here using: core 1-3, FIFO, Pri 60, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
-```
-#PERIODIC 100 B
-sudo taskset -c 1 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 10 300 1 -p & 
-sudo taskset -c 2 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 10 300 1 -p &
-sudo taskset -c 3 chrt -f 60 ./pub pub mqtt-quic://192.168.0.34:14567 0 sensor/3 100 10 300 1 -p & 
+TCP initial security cost evaluation:
+1. edge@edge:~ $ sudo docker cp CONTAINERNAME:/opt/emqx/etc/certs/cert.pem .
+2. sensor@sensor:~ $ scp edge@192.168.0.34:/home/edge/cert.pem .
+3. cloud@cloud:~ $ scp edge@IP:/home/edge/cert.pem .
+4. edge@edge:~ $ ./tcpautomation.sh
+5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\TCP\rpi5sensor\RSA2048sensor.log, etc.
+6. Stop container on edge, start another one, repeat from 1.
 
-wait
-echo "PERIODIC RUN FINISHED"
+QUIC initial security cost evaluation:
+1. Setup quicautomation.sh according to who is pub, sub.
+2. Modify pub.c to log topic,timestamp
 ```
+...
+    //printf("Total messages sent: %lu\n", sent_count);
+    //printf("Average send rate: %.2f msgs/s\n", rate);
+int main(int argc, char **argv)
+{
+    mlockall(MCL_CURRENT | MCL_FUTURE);
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    uint64_t start_ns = (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
+
+    FILE *f = fopen("sensor.log", "a");
+        if (!f) {
+            perror("fopen");
+            return 1;
+    }
+    fprintf(f, "%lu\n", start_ns);
+    fclose(f);
+    //etc.
+```
+3. Modify sub.c logger_thread() to log topic,timestamp
+```
+void *logger_thread(void *arg)
+{
+    FILE *f = fopen("cloud.log", "a");
+    int last = 0;
+    while (1) {
+        int w = ring_write;
+        while (last != w) {
+            measurement_t *m = &ring[last];
+            fprintf(f, "%llu\n", m->recv_ts);
+            last = (last + 1) % RING_SIZE;
+        }
+        fflush(f);
+        nng_msleep(100);
+    }
+}
+```
+4. edge@edge:~ $ ./quicautomation.sh
+5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\QUIC\rpi5sensor\RSA2048sensor.log, etc.
+6. Stop container on edge, start another one, repeat from 1.
+
+Calculate and visualize results on TCP and QUIC initial security cost:
+1. python initresults.py results\ result.csv #Assumes file structure as \results\TRANSPORT\PLATFORM\ALGORITHMnode.log
+2. python plotminmax.py result.csv sensor-edge #Reads .csv and plots the cost for a particular path
+
+QUIC power storm evaluation:
+1. Modify
+2. Modify quicautomation.sh to use multiple publishers, e.g.:
+```
+# Example: Start 3 sending threads, here using: core 1-n, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
+SENSOR_CMD="
+sudo taskset -c 1 ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 1 1 1 -p
+sudo taskset -c 2 ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 1 1 1 -p
+sudo taskset -c n ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/n 100 1 1 1 -p
+...etc.
+"
+```
+Spreading out the publishers on multiple cores per sensor/n topic.
