@@ -2,6 +2,7 @@
 
 import csv
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 # ---- Load data ----
 N = []
@@ -22,6 +23,18 @@ with open("sensor_edge.csv") as f:
         else:
             maxs.append(float(row["max"]))
 
+mpl.rcParams["font.family"] = "serif"
+mpl.rcParams["font.serif"] = ["Times New Roman", "Computer Modern", "DejaVu Serif"]
+
+mpl.rcParams.update({
+    "font.size": 18,        # base font size
+    "axes.labelsize": 18,   # x/y label size
+    "axes.titlesize": 18,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
+    "legend.fontsize": 18,
+})
+
 # ---- Plot ----
 plt.figure(figsize=(7, 5))
 
@@ -31,8 +44,7 @@ plt.plot(N, p50, marker="s", label="p50", linewidth=2, color="#8172B3")
 plt.plot(N, mins, marker="o", label="min", linewidth=2, color="#55A868")
 
 plt.axvline(x=20, color="red", linestyle="--", alpha=0.7)
-plt.text(14, 2550, "Failure regime (OOM)", color="red") #x, y coordinate of text
-
+plt.text(10.5, 2550, "Failure regime (OOM)", color="red") #x, y coordinate of text
 
 plt.xlabel("Number of sensors (N)")
 plt.ylabel("Latency (ms)")
