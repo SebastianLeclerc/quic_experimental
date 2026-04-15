@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+import matplotlib as mpl
 
 def main(csv_path, direction):
     df = pd.read_csv(csv_path)
@@ -39,7 +39,6 @@ def main(csv_path, direction):
         ordered=True
     )
 
-
     # Detect path column
     if "path" not in df.columns:
         raise ValueError(f"CSV must contain 'path' column, got: {df.columns.tolist()}")
@@ -58,8 +57,11 @@ def main(csv_path, direction):
         .reset_index()
     )
 
-    sns.set_theme(style="whitegrid", context="paper")
-    plt.figure(figsize=(8, 4))
+    sns.set_theme(style="whitegrid", context="paper", font_scale=2)
+    plt.figure(figsize=(8, 6.1))
+
+    mpl.rcParams["font.family"] = "serif"
+    mpl.rcParams["font.serif"] = ["Times New Roman", "Computer Modern", "DejaVu Serif"]
 
     ax = sns.barplot(
         data=agg,
@@ -119,11 +121,11 @@ def main(csv_path, direction):
 
     # --- Max arrow (right side) ---
     ax.annotate(
-        "Max value",
+        "Max",
         xy=(x + x_offset, ref["max"]),
-        xytext=(x + x_offset + 0.35, ref["max"] * 1.15),
+        xytext=(x + x_offset + 0.33, ref["max"] * 1.15),
         arrowprops=dict(arrowstyle="->", linewidth=1, color="red"),
-        fontsize=9,
+        fontsize=18,
         color="red",
         ha="left",
         va="bottom",
@@ -131,11 +133,11 @@ def main(csv_path, direction):
 
     # --- Min arrow (right side) ---
     ax.annotate(
-        "Min value",
+        "Min",
         xy=(x + x_offset, ref["min"]),
-        xytext=(x + x_offset + 0.35, ref["min"] * 0.85),
+        xytext=(x + x_offset + 0.33, ref["min"] * 0.85),
         arrowprops=dict(arrowstyle="->", linewidth=1, color="red"),
-        fontsize=9,
+        fontsize=18,
         color="red",
         ha="left",
         va="top",
@@ -150,7 +152,6 @@ def main(csv_path, direction):
 
     plt.tight_layout()
     plt.show()
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
