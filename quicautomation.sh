@@ -19,7 +19,7 @@ for i in {1..50}; do
     sleep $PAUSE
 
     # Start cloud (remote, background, record remote PID)
-    ssh $CLOUD "nohup $CLOUD_CMD > poop.log 2>&1 & echo \$! > cloud.pid"
+    ssh $CLOUD "nohup $CLOUD_CMD > temp.log 2>&1 & echo \$! > cloud.pid"
     sleep $PAUSE
 
     # Start sensor (remote, foreground — exits on its own)
@@ -29,7 +29,7 @@ for i in {1..50}; do
     # Stop cloud
     ssh $CLOUD "kill \$(cat cloud.pid) || true"
     ssh $CLOUD "rm -f cloud.pid"
-    ssh $CLOUD "rm -f poop.log"
+    ssh $CLOUD "rm -f temp.log"
 
     # Stop edge
     kill $EDGE_PID || true
