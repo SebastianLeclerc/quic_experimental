@@ -278,6 +278,7 @@ After everything is setup, assuming fresh reboot:
 5. Stop container on edge, start another one, repeat from 1.
 
 **QUIC initial security cost evaluation**:
+<!-- ssh-copy-id user@ip -->
 1. Setup quicautomation.sh according to who is pub, sub.
 2. Modify pub.c to log timestamp
 ```
