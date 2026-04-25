@@ -55,8 +55,14 @@ cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
 ninja
 sudo ninja install; sudo ldconfig
 ```
-Compile demo script with correct links and test it, e.g.:
+Set environment variables, compile demo script with correct links and test it, e.g.:
 ```
+#Controls minimum publisher behaviour, e.g.:
+export PATTERN=periodic
+export MSGPS=1
+export SIZE=100
+export DURATION=1
+
 gcc -O2 mqtt_pub.c -I/usr/local/include -L/usr/local/lib -lnng -lm -o mqtt_pub
 gcc -O2 mqtt_sub.c -I/usr/local/include -L/usr/local/lib -lnng -lpthread -lm -o mqtt_sub
 ./mqtt_pub mqtt-tcp://192.168.0.34:1883 0 test
@@ -262,6 +268,7 @@ sudo systemctl disable --now bluetooth.service
 sudo systemctl disable --now ModemManager.service
 ```
 
+Check that NTP is syncronized.
 Start docker container ```sudo docker restart CONTAINERNAME```.
 Automation scritps are designed to execute from the edge. 
 Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
