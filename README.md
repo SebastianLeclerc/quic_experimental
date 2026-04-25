@@ -253,68 +253,36 @@ sudo docker restart CONTAINERNAME
 # Measurement
 After everything is setup, assuming fresh reboot:
 
-1. sensor@sensor:~ $ ./rtoptimizaion.sh
-2. edge@edge:~ $ sudo rfkill block wifi
-3. edge@edge:~ $ ./rtoptimization.sh
-4. edge@edge:~ $ sudo docker update --cpuset-cpus="1" CONTAINERNAME
-5. edge@edge:~ $ sudo docker restart CONTAINERNAME
-
-**TCP initial security cost evaluation**:
-1. edge@edge:~ $ sudo docker cp CONTAINERNAME:/opt/emqx/etc/certs/cert.pem .
-2. scp cert.pem to cloud and sensor
-3. edge@edge:~ $ ./tcpautomation.sh
-4. scp sensor.log, edge.log, cloud.log to home with file name and path as, e.g., \results\TCP\rpi5sensor\RSA2048sensor.log, etc.
-5. Stop container on edge, start another one, repeat from 1.
-
-**QUIC initial security cost evaluation**:
-<!-- ssh-copy-id user@ip -->
-1. Setup quicautomation.sh according to who is pub, sub.
-2. Modify pub.c to log timestamp
+Kill unused services:
 ```
-...
-    //printf("Total messages sent: %lu\n", sent_count);
-    //printf("Average send rate: %.2f msgs/s\n", rate);
-int main(int argc, char **argv)
-{
-    mlockall(MCL_CURRENT | MCL_FUTURE);
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    uint64_t start_ns = (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
+sudo rfkill block wifi #E.g, on the edge
+sudo systemctl disable --now avahi-daemon.socket
+sudo systemctl disable --now avahi-daemon.service
+sudo systemctl disable --now bluetooth.service
+sudo systemctl disable --now ModemManager.service
+```
 
-    FILE *f = fopen("sensor.log", "a");
-        if (!f) {
-            perror("fopen");
-            return 1;
-    }
-    fprintf(f, "%lu\n", start_ns);
-    fclose(f);
-    //etc.
-```
-3. Modify sub.c logger_thread() to log timestamp
-```
-void *logger_thread(void *arg)
-{
-    FILE *f = fopen("cloud.log", "a");
-    int last = 0;
-    while (1) {
-        int w = ring_write;
-        while (last != w) {
-            measurement_t *m = &ring[last];
-            fprintf(f, "%llu\n", m->recv_ts);
-            last = (last + 1) % RING_SIZE;
-        }
-        fflush(f);
-        nng_msleep(100);
-    }
-}
-```
-4. edge@edge:~ $ ./quicautomation.sh
-5. scp sensor.log, edge.log, cloud.log to home with file name and path, e.g., \results\QUIC\rpi5sensor\RSA2048sensor.log, etc.
-6. Stop container on edge, start another one, repeat from 1.
+Start docker container ```sudo docker restart CONTAINERNAME```.
+Automation scritps are designed to execute from the edge. 
+Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
+Note that, for using mosquitto, certificates are copied from inside the container and distributed via the automation scripts.
 
-**Calculate and visualize results on TCP and QUIC initial security cost**:
-1. python initresults.py results\ result.csv #Assumes file structure as \results\TRANSPORT\PLATFORM\ALGORITHMnode.log
-2. python plotminmax.py result.csv sensor-edge #Reads .csv and plots the cost for a particular path
+**Connection Establishment Latency**
+Run ```init.sensor.sh``` and/or ```init.cloud.sh``` depending on direction, adjust IP, SSH keys, and directories as needed.
+This creates 5 new directories with .log files.
+Copy .log files to a suitable machine if needed.
+Run ```create_csv.py``` to analyze data.
+Run ```plot_from_csv.py``` to plot.
+
+**Concurrent Connection Scaling**
+A
+
+**Traffic Pattern and Streaming Behaviour**
+Run ```autocomparison.sh``` and adjust IP, SSH keys, and directories depending on test direction and location of the pub/sub programs.
+This creates a new directories with several .log files.
+Run ```analysis.py``` to print analysis.
+
+<!--
 
 **QUIC power storm evaluation**:
 1. Modify pub.c to log topic,timestamp
@@ -348,3 +316,4 @@ Spreading out the publishers on multiple cores per sensor/n topic.
 4. scp sensor*.log, edge*.log, cloud*.log to appropriate folder, e.g., \results\powerstorm\20sensors\
 5. python powerstorm.py #On the .log files and save data in .csv in the format: N,min,p50,p90,max
 6. python powerplot.py #And modify the input .csv file accordingly 
+-->
