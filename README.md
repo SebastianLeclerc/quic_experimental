@@ -44,6 +44,7 @@ Installed Mosquitto MQTT Client [https://mosquitto.org/download/](https://mosqui
 
 ```
 sudo apt install -y mosquitto-clients
+
 git clone https://github.com/emqx/NanoSDK
 sudo apt install cmake
 sudo apt install ninja-build
@@ -54,17 +55,17 @@ cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
 ninja
 sudo ninja install; sudo ldconfig
 ```
-Compile demo script with correct links and test it:
+Compile demo script with correct links and test it, e.g.:
 ```
-cd ~/NanoSDK/demo/quic_mqtt
-gcc -O2 quic_client.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -o quic_client
-./quic_client conn 'mqtt-quic://192.168.0.34:14567' #Default QUIC port, simple connection test to MQTT broker.
-```
-Verify connection in Edge, see below.
+gcc -O2 mqtt_pub.c -I/usr/local/include -L/usr/local/lib -lnng -lm -o mqtt_pub
+gcc -O2 mqtt_sub.c -I/usr/local/include -L/usr/local/lib -lnng -lpthread -lm -o mqtt_sub
+./mqtt_pub mqtt-tcp://192.168.0.34:1883 0 test
+./mqtt_sub mqtt-tcp://192.168.0.34:1883 0 test
 
-Copy pub.c, compile it, and test it out!
-```
-gcc -O2 pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o pub
+gcc -O2 quic_pub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o quic_pub
+gcc -O2 quic_sub.c -I/usr/local/include -L/usr/local/lib -lnng -lmsquic -lssl -lcrypto -lpthread -ldl -lm -o quic_sub
+./quic_pub mqtt-quic://192.168.0.34:14567 0 test
+./quic_sub mqtt-quic://192.168.0.34:14567 0 test
 ```
 
 # Edge
@@ -84,14 +85,14 @@ sudo tcpdump -i wlan0 -w quic_capture.pcap udp port 14567 #Verification of QUIC 
 
 sudo docker update --cpuset-cpus="1" CONTAINERNAME; sudo docker restart CONTAINERNAME #Pin to core 1, restart.
 sudo docker exec -it CONTAINERNAME sh #Go into the container
-#Following are inside the container
+#Following commands are inside the container
 emqx ctl clients list #Should show the client IP
 emqx ctl listeners #Should show QUIC enable
-/opt/emqx/etc/base.hocon #Needs QUIC listener
+/opt/emqx/etc/base.hocon #Conf that needs QUIC listener
+etc/certs/ #Where certs live 
 ```
 
-To enable measurement in edge:
-EMQX uses different timestamps than C "CLOCK_REALTIME". Therefore easier to use local MQTT subscriber in the edge, rather than, e.g., setting up ingress/egress rules to timestamp data.
+Note: EMQX uses different timestamps than C "CLOCK_REALTIME" used in the code. Therefore better to use MQTT subscriber timestamping, rather than setting up ingress/egress rules with timestamping.
 
 # Cloud
 Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
@@ -135,15 +136,10 @@ sudo tcpdump -n -i any udp port 14567 #Start a listener on the edge
 nc -uvz IP PORT #Send traffic to edge
 ```
 
-If network is OK can now test demo/sub program
+If network is OK can now test demo program for connection
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 ./quic_client conn mqtt-quic://IP:PORT
-#And test sub.c program
-#Subscribe to wildcard "sensor/#" with QoS 0 silent-mode
-./sub sub mqtt-quic://IP:14567 0 sensor/# 0
-CTRL+C #Interrupt and save statistics after sensors finished sending.
-cat messages.log #Contains: topic,recv_ts,seq,send_ts,rnd_len
 ```
 # Time Synchronization
 Configure the edge to be the NTP time source
@@ -156,6 +152,8 @@ sudo apt install chrony -y
 
 Configure edge: ```/etc/chrony/chrony.conf```
 ```
+curl https://api.ipify.org #Check public IP of device
+
 server ntp.se.pool.ntp.org iburst
 server 0.europe.pool.ntp.org iburst
 server 1.europe.pool.ntp.org iburst
@@ -189,21 +187,13 @@ In router, add port forwarding rule for NTP, port 123, Internal/External IP
 
 Verification
 ```
-chronyc sources -v #Shows time source marked with ^*
-chronyc clients #Shows NTP clients
+chronyc sources -v #Shows chosen time source marked with ^*
+sudo chronyc clients -v #Shows connected NTP clients on edge
 sudo systemctl restart chrony #After changes to the conf
-curl https://api.ipify.org #Check public IP
 ```
 
 # Security
-EMQX by default use X.509 certificate, RSA 2048-bit public key, signed with sha256WithRSAEncryption and a corresponding private RSA 2048-bit private key. Generally secure until Quantum Computing.
-
-EMQX by defauly only uses server-only authentication. Not secure.
-
-QUIC requires TLS 1.3, meaning only approved ciphers are allowed: 
-- Symmetric: AES‑128‑GCM, AES‑256‑GCM, CHACHA20‑POLY1305
-- Asymmetric: ECDHE only (P‑256, P‑384, P‑521)
-- Certificate RSA (typically 2048–4096 bit), ECDSA (P‑256, P‑384)
+EMQX docker container setup by default uses X.509 certificate with RSA-2048, server-only authentication. QUIC requires TLS 1.3.
 
 Start another container with other encryption
 ```
@@ -256,8 +246,7 @@ openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/CN=edge"
 openssl x509 -in cert.pem -text -noout
 openssl s_client -connect IP:Port -tls1_3 # To see what the server accepts
 
-#Pin in core 1 and restart
-sudo docker update --cpuset-cpus="1" CONTAINERNAME
+#Restart
 sudo docker restart CONTAINERNAME
 ```
 
