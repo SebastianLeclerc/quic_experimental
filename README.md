@@ -288,7 +288,12 @@ Run ```plot_from_csv.py``` to plot.
 
 **Concurrent Connection Scaling**
 
-A
+Create folders named 1, 5, 10, 15, and 20. 
+Run ```autoconcurrent.sh``` depending on direction, adjust IP, SSH keys, and directories as needed.
+Adjust script depending on TCP or QUIC program to test.
+This moves .log files to each folder.
+Copy .log files to a suitable machine if needed.
+Run ```plot.py``` to plot.
 
 **Traffic Pattern and Streaming Behaviour**
 
@@ -296,38 +301,4 @@ Run ```autocomparison.sh``` and adjust IP, SSH keys, and directories depending o
 This creates a new directories with several .log files.
 Run ```analysis.py``` to print analysis.
 
-<!--
 
-**QUIC power storm evaluation**:
-1. Modify pub.c to log topic,timestamp
-```
-int main(int argc, char **argv)
-{
-    ...
-    fprintf(f, "%s,%lu\n", argv[4], start_ns);
-    ...
-```
-2. Modify sub.c to log topic,timestamp
-```
-void *logger_thread(void *arg)
-{
-    ...
-    fprintf(f, "%s,%llu\n", m->topic, (unsigned long long)m->recv_ts);
-    ...
-```
-3. Modify quicautomation.sh to use multiple publishers, e.g.:
-```
-# Example: Start 3 sending threads, here using: core 1-n, Broker address, QoS 0, Topic, Size (B), msgs/s, duration, silent-mode, periodic traffic pattern.
-SENSOR_CMD="
-sudo taskset -c 1 ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/1 100 1 1 1 -p
-sudo taskset -c 2 ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/2 100 1 1 1 -p
-sudo taskset -c n ./pmulti pub mqtt-quic://192.168.0.34:14567 0 sensor/n 100 1 1 1 -p
-...etc.
-"
-```
-Spreading out the publishers on multiple cores per sensor/n topic.
-
-4. scp sensor*.log, edge*.log, cloud*.log to appropriate folder, e.g., \results\powerstorm\20sensors\
-5. python powerstorm.py #On the .log files and save data in .csv in the format: N,min,p50,p90,max
-6. python powerplot.py #And modify the input .csv file accordingly 
--->
