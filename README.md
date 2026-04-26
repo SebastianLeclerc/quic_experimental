@@ -284,7 +284,7 @@ Run ```init.sensor.sh``` and/or ```init.cloud.sh``` depending on direction, adju
 This creates 5 new directories with .log files.
 Copy .log files to a suitable machine if needed.
 Run ```create_csv.py``` to analyze data.
-Run ```plot_from_csv.py``` to plot.
+Run ```plot_from_csv.py``` to plot, adjust df and configs depending on direction.
 
 **Concurrent Connection Scaling**
 
