@@ -4,7 +4,7 @@ Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Clou
 # Hardware and connection scheme
 Sensor: RPi 4 Model B (4GB) ←→ Wi-Fi 802.11ac ←→ Local Sagemcom Broadband SAS Router (version 3.0_CU) ←→ Edge: RPI 5 Model B (4GB)
 
-↑
+    ↑
 
 ↓
 
