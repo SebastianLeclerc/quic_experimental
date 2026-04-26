@@ -1,7 +1,7 @@
 # Info
 Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
 
-# Hardware and connection scheme
+# Hardware and Connection Scheme
 <pre>
 
 Sensor: RPi 4 or 5 Model B (4GB) ←Wi-Fi 802.11ac→ Sagemcom Broadband SAS Router (version 3.0_CU) ←Ethernet→ Edge: RPI 5 Model B (4GB)
@@ -10,22 +10,22 @@ Sensor: RPi 4 or 5 Model B (4GB) ←Wi-Fi 802.11ac→ Sagemcom Broadband SAS Rou
                                                                 ↓      
                                         Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
 </pre>
-# Operating system & Real-Time Optimization
-Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
+# Operating System and Real-Time Optimization
+Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, and automatic Wi-Fi connection (check and reserve IP in router).
 
-After installing OS, followed instructions at to download, natively build, customize and install a new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
+After installing OS, followed instructions to download, natively build, customize, and install a new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
 
 <!-- https://www.youtube.com/watch?v=nDJETVboL4Y -->
 
-Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, rebooted.
+Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, and rebooted.
 
-After complete and rebooted, verified that PREEMPT_RT is enabled (```uname -a #Shows this```). Note, it can happen that e.g., ```apt upgrade``` overwrites the kernel, in that case just reinstall it via:
+After completing and rebooting, verified that PREEMPT_RT is enabled (```uname -a #Shows this```). Note, it can happen that e.g., ```apt upgrade``` overwrites the kernel, in that case just reinstall it via:
 
 ```
 cd linux
 make
 sudo make modules_install
-KERNEL=kernel_2712 # For RPI 5 Model B, see documentation above otherwise.
+KERNEL=kernel_2712 # For RPI 5 Model B, see documentation above; otherwise.
 sudo cp /boot/firmware/$KERNEL.img /boot/firmware/$KERNEL-backup.img
 sudo cp arch/arm64/boot/Image.gz /boot/firmware/$KERNEL.img
 sudo cp arch/arm64/boot/dts/broadcom/*.dtb /boot/firmware/
@@ -38,7 +38,7 @@ Run ```rtoptimization.sh``` to optimize core 1-3 for running RT tasks.
 
 Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
 
-*Keep priority High, e.g. probably, 30-60, higher than all kernel non-RT tasks, not starving network
+*Keep priority High, e.g., probably, 30-60, higher than all kernel non-RT tasks, not starving the network
 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 
@@ -59,7 +59,7 @@ cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DNNG_ENABLE_QUIC=ON ..
 ninja
 sudo ninja install; sudo ldconfig
 ```
-Set environment variables, compile demo script with correct links and test it, e.g.:
+Set environment variables, compile the demo script with the correct links, and test it, e.g.:
 ```
 #Controls minimum publisher behaviour, e.g.:
 export PATTERN=periodic
@@ -85,7 +85,7 @@ Install EMQX MQTT broker [https://docs.emqx.com/en/emqx/latest/deploy/install-do
 
 Install Mosquitto MQTT Client ```sudo apt install -y mosquitto-clients``` for TCP-testing.
 
-And setup MQTT over QUIC. Note that container does not autostart on boot, default config accepts 0.0.0.0:1883, 0.0.0.0:8883, etc.
+And set up MQTT over QUIC. Note that the container does not autostart on boot; the default config accepts 0.0.0.0:1883, 0.0.0.0:8883, etc.
 
 Useful commands, files:
 ```
@@ -102,14 +102,14 @@ emqx ctl listeners #Should show QUIC enable
 etc/certs/ #Where certs live 
 ```
 
-Note: EMQX uses different timestamps than C "CLOCK_REALTIME" used in the code. Therefore better to use MQTT subscriber timestamping, rather than setting up ingress/egress rules with timestamping.
+Note: EMQX uses different timestamps than the C "CLOCK_REALTIME" used in the code. Therefore better to use MQTT subscriber timestamping, rather than setting up ingress/egress rules with timestamping.
 
 # Cloud and Network
-Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
+Set up an Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
 
-Setup the VM network (Paravirtualized) with a Ephemeral Public IP. Downloaded the VM's SSH keys.
+Set up the VM network (Paravirtualized) with an Ephemeral Public IP. Downloaded the VM's SSH keys.
 
-Then configured the VM, installing neccessary packages to run sub.c:
+Then configured the VM, installing necessary packages to run sub.c:
 ```
 ssh -i SSH-KEY-FILE.key USER@IP
 sudo apt update
@@ -146,7 +146,7 @@ sudo tcpdump -n -i any udp port 14567 #Start a listener on the edge
 nc -uvz IP PORT #Send traffic to edge
 ```
 
-If network is OK can now test demo program for connection
+If the network is OK can now test the demo program for the connection
 ```
 cd ~/NanoSDK/demo/quic_mqtt
 ./quic_client conn mqtt-quic://IP:PORT
@@ -191,9 +191,9 @@ rtcsync
 driftfile /var/lib/chrony/chrony.drift
 ```
 
-Set timezone in cloud to  same as RPi ```sudo timedatectl set-timezone Europe/Stockholm```
+Set timezone in cloud to  the same as RPi ```sudo timedatectl set-timezone Europe/Stockholm```
 
-In router, add port forwarding rule for NTP, port 123, Internal/External IP
+In the router, add a port forwarding rule for NTP, port 123, Internal/External IP
 
 Verification
 ```
@@ -205,7 +205,7 @@ sudo systemctl restart chrony #After changes to the conf
 # Security
 EMQX docker container setup by default uses X.509 certificate with RSA-2048, server-only authentication. QUIC requires TLS 1.3.
 
-Start another container with other encryption
+Start another container with another authentication crypto
 ```
 sudo docker run -d --name CONTAINERNAME \
   -p 1883:1883 -p 8083:8083 \
@@ -228,7 +228,7 @@ listeners.quic.default {
 }
 EOF
 
-#Change the encryption by generating key, and self-signed cert for testing
+#Change the encryption by generating a key and a self-signed cert for testing
 sudo docker exec -it CONTAINERNAME sh
 cd etc/certs/
 
@@ -261,7 +261,7 @@ sudo docker restart CONTAINERNAME
 ```
 
 # Measurement
-After everything is setup, assuming fresh reboot:
+After everything is set up, assuming a fresh reboot:
 
 Kill unused services:
 ```
@@ -272,11 +272,11 @@ sudo systemctl disable --now bluetooth.service
 sudo systemctl disable --now ModemManager.service
 ```
 
-Check that NTP is syncronized.
-Start docker container ```sudo docker restart CONTAINERNAME```.
-Automation scritps are designed to execute from the edge. 
+Check that NTP is synchronized.
+Start the Docker container ```sudo docker restart CONTAINERNAME```.
+Automation scripts are designed to execute from the edge. 
 Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
-Note that, for using mosquitto over secure port 8883, certificates are required and copied from inside the container and distributed via the automation scripts.
+Note that, for using Mosquitto over secure port 8883, certificates are required and copied from inside the container and distributed via the automation scripts.
 
 **Connection Establishment Latency**
 
@@ -290,7 +290,7 @@ Run ```plot_from_csv.py``` to plot.
 
 Create folders named 1, 5, 10, 15, and 20. 
 Run ```autoconcurrent.sh``` depending on direction, adjust IP, SSH keys, and directories as needed.
-Adjust script depending on TCP or QUIC program to test.
+Adjust the script depending on the TCP or QUIC program to test.
 This moves .log files to each folder.
 Copy .log files to a suitable machine if needed.
 Run ```plot.py``` to plot.
@@ -298,7 +298,7 @@ Run ```plot.py``` to plot.
 **Traffic Pattern and Streaming Behaviour**
 
 Run ```autocomparison.sh``` and adjust IP, SSH keys, and directories depending on test direction and location of the pub/sub programs.
-This creates a new directories with several .log files.
-Run ```analysis.py``` to print analysis.
+This creates a new directory with several .log files.
+Run ```analysis.py``` to print the analysis.
 
 
