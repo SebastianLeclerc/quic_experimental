@@ -104,7 +104,7 @@ etc/certs/ #Where certs live
 
 Note: EMQX uses different timestamps than C "CLOCK_REALTIME" used in the code. Therefore better to use MQTT subscriber timestamping, rather than setting up ingress/egress rules with timestamping.
 
-# Cloud
+# Cloud and Network
 Setup a Oracle Cloud VM ("Always Free-eligible"): Canonical Ubuntu 22.04 Minimal, VM.Standard.E2.1.Micro
 
 Setup the VM network (Paravirtualized) with a Ephemeral Public IP. Downloaded the VM's SSH keys.
