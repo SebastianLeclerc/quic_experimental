@@ -1,5 +1,5 @@
 # Info
-Setup for modified MQTT over QUIC project using EMQX, NanoSDK, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
+Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
 
 # Hardware
 Sensor: RPi 4 Model B (4GB) ...Wi-Fi 802.11ac... Edge: RPI 5 Model B (4GB) ...Wi-Fi 802.11ac to ISP... Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
