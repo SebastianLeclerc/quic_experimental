@@ -2,20 +2,22 @@
 Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
 
 # Hardware and connection scheme
+<pre>
+
 Sensor: RPi 4 Model B (4GB) ←→ Wi-Fi 802.11ac ←→ Local Sagemcom Broadband SAS Router (version 3.0_CU) ←→ Edge: RPI 5 Model B (4GB)
 
-    ↑
-
-↓
-
-Ethernet to ISP
-
-↑
-
-↓
-
-Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
-
+                                                                ↑
+                                                                
+                                                                ↓
+                                                                
+                                                                Ethernet to ISP
+                                                                
+                                                                ↑
+                                                                
+                                                                ↓
+                                                                
+                                                                Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
+</pre>
 # Operating system & real-time optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
 
