@@ -275,6 +275,7 @@ Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
 Note that, for using mosquitto, certificates are copied from inside the container and distributed via the automation scripts.
 
 **Connection Establishment Latency**
+
 Run ```init.sensor.sh``` and/or ```init.cloud.sh``` depending on direction, adjust IP, SSH keys, and directories as needed.
 This creates 5 new directories with .log files.
 Copy .log files to a suitable machine if needed.
@@ -282,9 +283,11 @@ Run ```create_csv.py``` to analyze data.
 Run ```plot_from_csv.py``` to plot.
 
 **Concurrent Connection Scaling**
+
 A
 
 **Traffic Pattern and Streaming Behaviour**
+
 Run ```autocomparison.sh``` and adjust IP, SSH keys, and directories depending on test direction and location of the pub/sub programs.
 This creates a new directories with several .log files.
 Run ```analysis.py``` to print analysis.
