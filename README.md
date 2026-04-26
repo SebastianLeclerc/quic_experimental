@@ -10,7 +10,7 @@ Sensor: RPi 4 or 5 Model B (4GB) ←Wi-Fi 802.11ac→ Sagemcom Broadband SAS Rou
                                                                 ↓      
                                         Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
 </pre>
-# Operating system & real-time optimization
+# Operating system & Real-Time Optimization
 Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, automatic Wi-Fi connection (check and reserve IP in router).
 
 After installing OS, followed instructions at to download, natively build, customize and install a new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
