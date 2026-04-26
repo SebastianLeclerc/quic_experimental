@@ -276,7 +276,7 @@ Check that NTP is syncronized.
 Start docker container ```sudo docker restart CONTAINERNAME```.
 Automation scritps are designed to execute from the edge. 
 Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
-Note that, for using mosquitto, certificates are copied from inside the container and distributed via the automation scripts.
+Note that, for using mosquitto over secure port 8883, certificates are required and copied from inside the container and distributed via the automation scripts.
 
 **Connection Establishment Latency**
 
