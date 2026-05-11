@@ -41,7 +41,8 @@ Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3]
 
 *Keep priority High, e.g., probably, 30-60, higher than all kernel non-RT tasks, not starving the network
  -->
-After installing OS run ```rtoptimization.sh``` to optimize for isolation of core 1-3, while keeping kernel tasks in core 0 
+ 
+After installing OS run ```coreisolation.sh``` to optimize for isolation of core 1-3, while keeping kernel tasks in core 0 
  
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 
