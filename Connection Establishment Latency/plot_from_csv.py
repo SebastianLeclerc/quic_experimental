@@ -3,6 +3,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
 
+mpl.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Times New Roman"],
+    "font.size": 14,
+    "axes.titlesize": 18,
+    "axes.labelsize": 15,
+    "xtick.labelsize": 15,
+    "ytick.labelsize": 15,
+    "legend.fontsize": 12,
+})
+
+plt.rcParams["pdf.fonttype"] = 42   # TrueType
+plt.rcParams["ps.fonttype"] = 42
+
 # -----------------------------
 # Load data
 # -----------------------------
@@ -11,15 +25,6 @@ df = pd.read_csv("from_sensor.csv") #change according to path
 
 df = df[df["path"] == "sensor-edge"] #change according to path
 #df = df[df["path"] == "cloud-edge"]
-
-mpl.rcParams.update({
-    "font.size": 12,
-    "axes.titlesize": 12,
-    "axes.labelsize": 12,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12,
-    "legend.fontsize": 11,
-})
 
 # -----------------------------
 # Define configurations (bars), change according to path
