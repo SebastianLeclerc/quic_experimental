@@ -1,5 +1,5 @@
 # Info
-Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Cloud, and local RPi's patched with PREEMPT_RT as Sensor and Edge
+Setup for MQTT over QUIC/TCP project using EMQX, NanoSDK, mosquitto, Oracle Cloud, and local RPi's (with core isolation optimization) as Sensor and Edge
 
 # Hardware and Connection Scheme
 <pre>
@@ -10,12 +10,13 @@ Sensor: RPi 4 or 5 Model B (4GB) ←Wi-Fi 802.11ac→ Sagemcom Broadband SAS Rou
                                                                 ↓      
                                         Cloud: Oracle Cloud VM (_or_ local RPI 5 Model B (4GB))
 </pre>
-# Operating System and Real-Time Optimization
-Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, and automatic Wi-Fi connection (check and reserve IP in router).
+# Operating System and Core Isolation
+Operating System (OS): RPi OS Lite (64-bit). Basic setup with user/pass, SSH, and automatic Wi-Fi connection (check and reserve IPs in router for convenience).
 
+<!--
 After installing OS, followed instructions to download, natively build, customize, and install a new kernel (with PREEMPT_RT): [https://www.raspberrypi.com/documentation/computers/linux_kernel.html](https://www.suse.com/c/cpu-isolation-practical-example-part-5/)
 
-<!-- https://www.youtube.com/watch?v=nDJETVboL4Y -->
+ https://www.youtube.com/watch?v=nDJETVboL4Y
 
 Before "Build" step, changed .config to enable PREEMPT_RT=y via GUI (```sudo apt install libncurses-dev -y && make menuconfig```), then built, configured, installed, and rebooted.
 
@@ -39,7 +40,9 @@ Run ```rtoptimization.sh``` to optimize core 1-3 for running RT tasks.
 Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
 
 *Keep priority High, e.g., probably, 30-60, higher than all kernel non-RT tasks, not starving the network
-
+ -->
+After installing OS run ```rtoptimization.sh``` to optimize for isolation of core 1-3, while keeping kernel tasks in core 0 
+ 
 Limitation: Some libraries, kernel, OS, network stack, etc. (e.g., NNG, QUIC, kernel socket, NIC) will still cause unexpected delays.
 
 # Sensor
@@ -275,7 +278,7 @@ sudo systemctl disable --now ModemManager.service
 Check that NTP is synchronized.
 Start the Docker container ```sudo docker restart CONTAINERNAME```.
 Automation scripts are designed to execute from the edge. 
-Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```
+Copy SSH keys from edge to sensor and cloud ```ssh-copy-id user@ip```.
 Note that, for using Mosquitto over secure port 8883, certificates are required and copied from inside the container and distributed via the automation scripts.
 
 **Connection Establishment Latency**
