@@ -34,7 +34,6 @@ sudo cp arch/arm64/boot/dts/overlays/*.dtb* /boot/firmware/overlays/
 sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
 sudo reboot
 ```
-Based on: [https://www.suse.com/c/cpu-isolation-introduction-part-1/](https://www.suse.com/c/cpu-isolation-introduction-part-1/)
 
 Run ```coreisolation.sh``` to optimize core 1-3 for running RT tasks.
 
@@ -42,6 +41,8 @@ Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3]
 
 *Keep priority High, e.g., probably, 30-60, higher than all kernel non-RT tasks, not starving the network
  -->
+ 
+Based on: [https://www.suse.com/c/cpu-isolation-introduction-part-1/](https://www.suse.com/c/cpu-isolation-introduction-part-1/)
  
 After installing OS run ```coreisolation.sh``` to optimize for isolation of core 1-3, while keeping kernel tasks in core 0 
  
