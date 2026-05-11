@@ -1,16 +1,19 @@
 #!/bin/bash
-# Preparing for running real-time tasks (SCHED_FIFO / SCHED_DEADLINE)
-# Linux sensor 6.12.78-v8+ #1 SMP PREEMPT_RT Fri Mar 27 02:09:06 CET 2026 aarch64 GNU/Linux
+# Isolating core 1-3, running kernel things in core 0
+# Can also be used for real-time tasks (SCHED_FIFO / SCHED_DEADLINE), currently disabled
 
 u=$(whoami)
 error=0
 
-# PREEMPT_RT
-if uname -a | grep -q "PREEMPT_RT"; then
-    echo "PREEMPT_RT kernel detected, nice!"
-else
-    echo "PREEMPT_RT not found :("
-    exit 1
+#Only useful for PREEMPT_RT RT optimization, not specifically core isolation
+    if false; then
+    # PREEMPT_RT
+    if uname -a | grep -q "PREEMPT_RT"; then
+        echo "PREEMPT_RT kernel detected, nice!"
+    else
+        echo "PREEMPT_RT not found :("
+        exit 1
+    fi
 fi
 
 # Hyperthreading off/not available
@@ -48,34 +51,36 @@ else
     error=1
 fi
 
-# Check global memory lock limit
-if grep -q "DefaultLimitMEMLOCK=infinity" /etc/systemd/system.conf; then
-    echo "Global memory already configured, nice!"
-else
-    echo "Fixing global memory lock :("
-    sudo sed -i 's/^#DefaultLimitMEMLOCK=8M/DefaultLimitMEMLOCK=infinity/' /etc/systemd/system.conf
-    sudo systemctl daemon-reexec
-    error=1
+#Only useful for PREEMPT_RT RT optimization, not specifically core isolation
+    if false; then
+    # Check global memory lock limit
+    if grep -q "DefaultLimitMEMLOCK=infinity" /etc/systemd/system.conf; then
+        echo "Global memory already configured, nice!"
+    else
+        echo "Fixing global memory lock :("
+        sudo sed -i 's/^#DefaultLimitMEMLOCK=8M/DefaultLimitMEMLOCK=infinity/' /etc/systemd/system.conf
+        sudo systemctl daemon-reexec
+        error=1
+    fi
+    
+    # Check user memory access limit
+    if grep -q "^$u hard memlock unlimited" /etc/security/limits.conf; then
+        echo "User memory already configured, nice!"
+    else
+        echo "Fixing user memory lock :("
+        {
+            echo ""
+            echo "# Added by setup script"
+            echo "$u hard memlock unlimited"
+            echo "$u soft memlock unlimited"
+            echo "root hard memlock unlimited"
+            echo "root soft memlock unlimited"
+        } | sudo tee -a /etc/security/limits.conf > /dev/null
+    
+        sudo systemctl daemon-reexec
+        error=1
+    fi
 fi
-
-# Check user memory access limit
-if grep -q "^$u hard memlock unlimited" /etc/security/limits.conf; then
-    echo "User memory already configured, nice!"
-else
-    echo "Fixing user memory lock :("
-    {
-        echo ""
-        echo "# Added by setup script"
-        echo "$u hard memlock unlimited"
-        echo "$u soft memlock unlimited"
-        echo "root hard memlock unlimited"
-        echo "root soft memlock unlimited"
-    } | sudo tee -a /etc/security/limits.conf > /dev/null
-
-    sudo systemctl daemon-reexec
-    error=1
-fi
-
 
 # Reboot if needed
 if [ "$error" -eq 1 ]; then
@@ -96,10 +101,13 @@ echo "$maxfreq" | sudo tee /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
 echo "$maxfreq" | sudo tee /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq > /dev/null
 echo "$maxfreq" | sudo tee /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq > /dev/null
 
-echo "Disable RT Throttling (RT tasks can run max 1 s period)"
-p=$(cat /proc/sys/kernel/sched_rt_period_us)
-echo "Current period is: $p" 
-echo -1 | sudo tee /proc/sys/kernel/sched_rt_runtime_us > /dev/null
+#Only useful for PREEMPT_RT RT optimization, not specifically core isolation
+if false; then
+    echo "Disable RT Throttling (RT tasks can run max 1 s period)"
+    p=$(cat /proc/sys/kernel/sched_rt_period_us)
+    echo "Current period is: $p" 
+    echo -1 | sudo tee /proc/sys/kernel/sched_rt_runtime_us > /dev/null
+fi
 
 echo "Migrate (all possible) IRQs to CPU 0 (exclude CPU 1-3)"
 for I in /proc/irq/[0-9]*; do
