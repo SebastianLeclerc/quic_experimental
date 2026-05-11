@@ -20,6 +20,9 @@ mpl.rcParams.update({
     "legend.fontsize": 15,
 })
 
+plt.rcParams["pdf.fonttype"] = 42   # TrueType
+plt.rcParams["ps.fonttype"] = 42
+
 COLORS = [
     "#4C72B0",  # blue
     "#DD8452",  # orange
