@@ -309,8 +309,10 @@ Run ```analysis.py``` to print the analysis.
 
 # Reference
 
-**Replication package for the article**: On the Latency of Secure MQTT over QUIC vs. TCP: An experimental evaluation
-
-**Written by**: Sebastian Leclerc, Alessio Bucaioni, Mohammad Ashjaei
-
-**From**: Mälardalen University, Västerås, Sweden
+@inproceedings{leclerc2026secureMQTToverQUIC,
+    author    = {Leclerc, Sebastian and and Bucaioni, Alessio and Ashjaei, Mohammad},
+    booktitle = {{...}},
+    title     = {{On the Latency of Secure MQTT over QUIC vs. TCP: An experimental evaluation}},
+    year      = {2026},
+    pages     = {1--8}
+}
