@@ -308,7 +308,7 @@ This creates a new directory with several .log files.
 Run ```analysis.py``` to print the analysis.
 
 # Reference
-
+```
 @inproceedings{leclerc2026secureMQTToverQUIC,
     author    = {Leclerc, Sebastian and and Bucaioni, Alessio and Ashjaei, Mohammad},
     booktitle = {{...}},
@@ -316,3 +316,4 @@ Run ```analysis.py``` to print the analysis.
     year      = {2026},
     pages     = {1--8}
 }
+```
