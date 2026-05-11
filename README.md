@@ -307,4 +307,10 @@ Run ```autocomparison.sh``` and adjust IP, SSH keys, and directories depending o
 This creates a new directory with several .log files.
 Run ```analysis.py``` to print the analysis.
 
+# Reference
 
+**Replication package for the article**: On the Latency of Secure MQTT over QUIC vs. TCP: An experimental evaluation
+
+**Written by**: Sebastian Leclerc, Alessio Bucaioni, Mohammad Ashjaei
+
+**From**: Mälardalen University, Västerås, Sweden
