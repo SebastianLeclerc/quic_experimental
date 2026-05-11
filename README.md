@@ -34,6 +34,7 @@ sudo cp arch/arm64/boot/dts/overlays/*.dtb* /boot/firmware/overlays/
 sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
 sudo reboot
 ```
+Based on: [https://www.suse.com/c/cpu-isolation-introduction-part-1/](https://www.suse.com/c/cpu-isolation-introduction-part-1/)
 
 Run ```coreisolation.sh``` to optimize core 1-3 for running RT tasks.
 
