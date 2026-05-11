@@ -35,7 +35,7 @@ sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
 sudo reboot
 ```
 
-Run ```rtoptimization.sh``` to optimize core 1-3 for running RT tasks.
+Run ```coreisolation.sh``` to optimize core 1-3 for running RT tasks.
 
 Run program in core 1-3, using schedule, and priority*: ```sudo taskset -c [1-3] chrt -[e.g, f, r, etc.] [0-99] ./my_program arg```
 
