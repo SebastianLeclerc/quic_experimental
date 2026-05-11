@@ -310,7 +310,7 @@ Run ```analysis.py``` to print the analysis.
 # Reference
 ```
 @inproceedings{leclerc2026secureMQTToverQUIC,
-    author    = {Leclerc, Sebastian and and Bucaioni, Alessio and Ashjaei, Mohammad},
+    author    = {Leclerc, Sebastian and Bucaioni, Alessio and Ashjaei, Mohammad},
     booktitle = {{...}},
     title     = {{On the Latency of Secure MQTT over QUIC vs. TCP: An experimental evaluation}},
     year      = {2026},
